@@ -379,7 +379,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
 <div class="ed-modal" id="edModal" hidden role="dialog" aria-modal="true" aria-labelledby="edTitle">
   <form class="ed-card" id="edForm">
     <h2 id="edTitle">Edit layout</h2>
-    <p>Paste a GitHub token that can write to <b>InitialPhantom/lyn.-2nd-website-template</b>. It is checked with GitHub and kept only in this browser.</p>
+    <p>Paste a GitHub token that can write to <b>InitialPhantom/bento-2nd-website-serene</b>. It is checked with GitHub and kept only in this browser.</p>
     <input id="edTok" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" aria-label="GitHub token">
     <div class="err" id="edErr" aria-live="polite"></div>
     <div class="row"><button type="button" id="edCancel">Cancel</button><button type="submit" class="primary" id="edGo">Unlock</button></div>
@@ -766,7 +766,7 @@ addEventListener('keydown',e=>{if(lb.hidden)return;if(e.key==='Escape')closeLb()
   const DEF={pond:[0,0,2,2],baon:[2,0,2,1],clock:[2,1,1,1],rooms:[3,1,1,2],weather:[0,2,2,1],pace:[2,2,1,1],atlas:[0,3,1,2],wind:[1,3,2,1],grow:[3,3,1,2],hollow:[1,4,1,2],serene:[2,4,1,2],receipt:[0,5,1,2],motion:[3,5,1,2],msg:[1,6,2,1]};
   // any size from 1x1 up to 4 wide x 3 tall; a few tiles need at least 2 columns for their contents
   const MINW={baon:2,weather:2,wind:2,msg:2},MAXH=3,minW=id=>MINW[id]||1;
-  const REPO='InitialPhantom/lyn.-2nd-website-template',FILE='layout.json',BRANCH='main',COLS=4;
+  const REPO='InitialPhantom/bento-2nd-website-serene',FILE='layout.json',BRANCH='main',COLS=4;
   const grid=document.querySelector('.grid'),wide=matchMedia('(min-width:641px)'),ids=Object.keys(DEF);
   const capOf=id=>document.querySelector(`.cap[data-for="${id}"]`);
   document.querySelectorAll('.cap').forEach(c=>{const m=(c.getAttribute('style')||'').match(/grid-area:\s*([\w-]+)/);if(m)c.dataset.for=m[1]});
