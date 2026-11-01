@@ -13,14 +13,11 @@ python -m http.server 8000
 ## What's inside
 
 - **Profile**: a spinnable planet avatar (drag to spin, tap for night) and a short intro.
-- **Films**: each of the three pieces has its own tile, dithered until you hover, opening in a blurred in-page viewer. A gallery tile holds all of them as portrait cards you drag sideways.
-- **Reel**: the three films back to back, with a playhead you can drag to scrub.
-- **Now playing**: types out the caption of whatever the reel is showing.
-- **Listen**: turns on the sound of the film in the reel.
-- **Clarity**: one handle that clears the dither off every film.
+- **Films**: each piece has exactly one tile, dithered until you hover, opening in a blurred in-page viewer. The films play one after another; a blue dot marks the one that's on.
+- **Now playing**: types out the current film's caption and song credit, has a sound toggle for that film, and a scrubber across all films.
 - **Don't blink**: an eye that follows the pointer. Blink it and every film jumps somewhere else.
 - **Pace dial**: speeds up or slows down every animation and the films themselves.
-- Also Pond, Today's slip (an activity receipt that logs what you do on the page) and Message me (a small chat box).
+- Also Pond and Message me (a small chat box).
 - **Sound**: soft chimes made with the Web Audio API, plus the films' own audio. Both can be muted from the footer.
 
 Fonts are Public Sans and Geist Mono from Google Fonts. There are no other dependencies.
@@ -32,7 +29,7 @@ You can rearrange and resize the grid yourself, straight on the site.
 1. Make a GitHub token: **Settings → Developer settings → Fine-grained tokens → Generate new token**. Under **Repository access**, pick only this repo. Under **Permissions → Contents**, choose **Read and write**.
 2. Open the site with `?edit` at the end of the address, for example `https://your-site/?edit`.
 3. Paste the token. The page asks GitHub whether that token can write to this repo, and only then turns editing on. Without `?edit` the editor code isn't set up at all, and even with it nothing can be dragged until the token checks out. The token is kept in that browser only (localStorage). "Forget token" removes it.
-4. Drag a tile to move it. A ghost shows where it will land, and the other tiles slide out of the way and pack up so there are never overlaps or gaps. Drag any edge or corner of a tile to resize it, from 1×1 up to 4 columns wide and 3 rows tall (Reel, Now playing and Message me need at least 2 columns). When you let go, the grid tidies itself so every tile takes the first spot that fits.
+4. Drag a tile to move it. A ghost shows where it will land, and the other tiles slide out of the way and pack up so there are never overlaps or gaps. Drag any edge or corner of a tile to resize it, from 1×1 up to 4 columns wide and 3 rows tall (Now playing and Message me need at least 2 columns). When you let go, the grid tidies itself so every tile takes the first spot that fits.
 5. **Save** commits `layout.json` to this repo. The site reads that file on load, so visitors see the new arrangement once your host serves the new commit.
 
 Notes:
@@ -43,5 +40,5 @@ Notes:
 ## Placeholders to fill in
 
 - **Message me**: set `CONTACT_EMAIL` near the bottom of `index.html` to your address. "Send" then opens a pre-filled email to you. Until it's set, the tile tells visitors their message wasn't sent.
-- **Films**: three reels from @serene.aiart live in `art/` and are listed in the `ART` array near the bottom of `index.html`, with their caption and post link. To add one to the gallery and the reel, drop a video into `art/` and add an entry. The three single-film tiles (`feature`, `f2`, `f3`) pick their piece with `data-i`.
+- **Films**: three reels from @serene.aiart live in `art/` and are listed in the `ART` array near the bottom of `index.html`, with their caption and post link. Each entry has an `audio` field for the song credit ("Song · Artist"); it shows next to the title in the captions, Now playing and the viewer. The credits are still empty. To add a piece, drop a video into `art/`, add an entry, and add a film tile with a new `data-i` so no piece repeats.
 - The "latest" line in the profile names the newest piece; update it when you post.
