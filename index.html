@@ -715,7 +715,7 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
 /* ---------- message me (sent with FormSubmit, no server needed) ---------- */
 // Your email, or the random address FormSubmit gives you after you confirm the first message
 // (using that one keeps your email out of the page). Leave empty to turn sending off.
-const FORM_TO='';
+const FORM_TO='lynondev@proton.me';
 const chat=$('#chat'),msgIn=$('#msgIn');
 function bubble(cls,text){const b=document.createElement('div');b.className='bubble '+cls;if(text)b.textContent=text;chat.appendChild(b);while(chat.children.length>4)chat.firstChild.remove();return b}
 function typing(){const t=bubble('typing');t.innerHTML='<i></i><i></i><i></i>';return t}
