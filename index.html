@@ -842,7 +842,7 @@ const fileImgs=WALLS.map((p,i)=>{const b=mk('button','wp-file');b.type='button';
   b.append(im,nm);b.addEventListener('click',()=>wpOpen(i));wpFiles.appendChild(b);return im});
 // viewer: every wallpaper in a row that glides on a spring
 const wpItems=WALLS.map((p,i)=>{const f=mk('figure','wp-item'),im=mk('img');im.src=p.src;im.alt='serene.aiart wallpaper '+(i+1);im.loading='lazy';im.decoding='async';im.draggable=false;
-  const a=mk('a','wp-dl',DL_SVG+'Download');a.href=p.src;a.download='serene-aiart-wallpaper-'+p.n+'.webp';f.append(im,a);wpTrack.appendChild(f);return f});
+  const a=mk('a','wp-dl',DL_SVG+'Download');a.href=p.src;a.download='serene wallpaper '+(i+1)+'.webp';f.append(im,a);wpTrack.appendChild(f);return f});
 wpView.appendChild(wpTrack);wpWin.append(wpFiles,wpView,wpPrev,wpNext);
 const blurN=document.getElementById('wpblurN');
 let wpPos=0,wpTgt=0,wpVel=0,wpIW=300,wpGap=20,wpRun=false,wpLast=0,wpDrag=null;
