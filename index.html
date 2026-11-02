@@ -176,6 +176,9 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .lb-btn svg{width:18px;height:18px}
 .lb-x{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:16px}
 @media (max-width:640px){
+  .msg-win .wp-files{grid-template-columns:repeat(3,minmax(0,1fr));padding:4px 14px 20px;gap:8px 4px}
+  .msg-win .wp-file{padding:6px}
+  .msg-win .wp-btn{width:36px;height:36px;margin-top:-18px}
   .lb{grid-template-columns:minmax(0,1fr);padding-inline:16px}
   .lb .lb-prev,.lb .lb-next{display:none}
   .lb-media{height:min(72vh,150vw)}
@@ -258,25 +261,38 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .msg-win.big .bubble{font-size:14.5px;max-width:76%}
 .msg-win.big .compose{left:18px;right:18px;bottom:18px}
 
-/* wallpapers window: a sideways strip with arrows, drag, wheel and swipe */
-.wp-grid{position:absolute;top:58px;left:0;right:0;bottom:0;display:flex;gap:16px;padding:4px 24px 22px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-padding-inline:24px;scrollbar-width:none;
-  cursor:grab;touch-action:pan-x;-webkit-user-select:none;user-select:none;opacity:0;transition:opacity .2s}
-.wp-grid::-webkit-scrollbar{display:none}
-.wp-grid.drag{scroll-snap-type:none;cursor:grabbing}
-.msg-win.big .wp-grid{opacity:1;transition:opacity .3s .2s}
-.wp-item{flex:none;height:100%;margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;scroll-snap-align:start}
-.wp-item img{height:min(calc(100% - 42px),calc((100vw - 96px) * 16 / 9));width:auto;aspect-ratio:9/16;object-fit:cover;border-radius:14px;background:var(--paper);display:block;pointer-events:none;-webkit-user-drag:none}
+/* wallpapers window: square files first; picking one zooms it into a gliding viewer */
+.wp-files{position:absolute;top:58px;left:0;right:0;bottom:0;overflow-y:auto;padding:6px 22px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px 10px;align-content:start;
+  scrollbar-width:thin;opacity:0;transition:opacity .2s,filter .4s ease,transform .4s cubic-bezier(.2,.9,.25,1)}
+.msg-win.big .wp-files{opacity:1;transition:opacity .3s .2s,filter .4s ease,transform .4s cubic-bezier(.2,.9,.25,1)}
+.msg-win.viewing .wp-files{opacity:0;filter:blur(12px);transform:scale(.96);pointer-events:none;transition:opacity .3s,filter .4s ease,transform .4s cubic-bezier(.2,.9,.25,1)}
+.wp-file{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px;border-radius:12px;transition:background .2s}
+.wp-file:hover,.wp-file:focus-visible{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.wp-file img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.08),0 10px 20px -14px rgba(0,0,0,.35);transition:transform .3s cubic-bezier(.2,.9,.25,1)}
+.wp-file:hover img{transform:translateY(-3px)}
+.wp-file span{max-width:100%;font-family:var(--f-mono);font-size:10.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wp-view{position:absolute;top:58px;left:0;right:0;bottom:0;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .35s ease}
+.msg-win.viewing .wp-view{opacity:1;pointer-events:auto}
+.wp-track{position:absolute;left:0;top:0;bottom:0;display:flex;gap:var(--wg,20px);padding:4px 0 22px;will-change:transform;touch-action:none;cursor:grab}
+.wp-track.drag{cursor:grabbing}
+.wp-item{flex:none;height:100%;margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;will-change:transform,opacity}
+.wp-item img{height:calc(100% - 42px);width:var(--iw,300px);object-fit:cover;border-radius:16px;display:block;background:var(--paper);pointer-events:none;-webkit-user-drag:none;box-shadow:0 30px 50px -30px rgba(0,0,0,.45)}
 .wp-dl{height:32px;padding:0 14px;border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:color .2s}
 .wp-dl:hover{color:var(--accent)}
 .wp-dl svg{width:13px;height:13px}
 .wp-btn{position:absolute;top:calc(50% + 8px);z-index:3;width:42px;height:42px;margin-top:-21px;border-radius:50%;background:var(--paper);color:var(--ink);display:grid;place-items:center;
-  box-shadow:0 1px 2px rgba(0,0,0,.1),0 10px 22px -10px rgba(0,0,0,.4);opacity:0;transition:opacity .2s,transform .15s}
+  box-shadow:0 1px 2px rgba(0,0,0,.1),0 10px 22px -10px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s,transform .15s}
 .wp-btn svg{width:17px;height:17px}
 .wp-btn:active{transform:scale(.92)}
 .wp-btn.prev{left:14px}.wp-btn.next{right:14px}
-.msg-win.big .wp-btn{opacity:1;transition:opacity .3s .2s,transform .15s}
-.msg-win.big .wp-btn[disabled]{opacity:0;pointer-events:none}
+.msg-win.viewing .wp-btn{opacity:1;pointer-events:auto}
+.msg-win.viewing .wp-btn[disabled]{opacity:0;pointer-events:none}
+.wp-back{height:30px;padding:0 12px 0 8px;margin:0 8px 0 -10px;border-radius:999px;display:none;align-items:center;gap:4px;font-size:12.5px;font-weight:500;color:var(--ink2);background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.wp-back svg{width:14px;height:14px}
+.wp-back:hover{color:var(--ink)}
+.msg-win.viewing .wp-back{display:inline-flex}
 .wp-count{margin-left:auto;margin-right:12px;font-family:var(--f-mono);font-size:11px;font-weight:400;color:var(--ink3)}
+.wp-flip{position:fixed;z-index:500;object-fit:cover;pointer-events:none;box-shadow:0 30px 50px -30px rgba(0,0,0,.45);transition:left .52s cubic-bezier(.2,.9,.25,1),top .52s cubic-bezier(.2,.9,.25,1),width .52s cubic-bezier(.2,.9,.25,1),height .52s cubic-bezier(.2,.9,.25,1),border-radius .52s cubic-bezier(.2,.9,.25,1)}
 
 /* small controls */
 .btn{position:absolute;z-index:5;height:28px;padding:0 12px;border-radius:999px;background:var(--paper);font-size:12.5px;font-weight:500;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
@@ -404,6 +420,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
 </div>
 
 <div class="grain" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><filter id="wpblur" x="-5%" y="0" width="110%" height="100%" color-interpolation-filters="sRGB"><feGaussianBlur id="wpblurN" stdDeviation="0 0"/></filter></svg>
 <div class="vids" id="vids" aria-hidden="true"></div>
 <div class="ed-modal" id="edModal" hidden role="dialog" aria-modal="true" aria-labelledby="edTitle">
   <form class="ed-card" id="edForm">
@@ -811,34 +828,67 @@ shown.forEach(p=>p.img.addEventListener('load',()=>paint(walls,0)));
 
 const DL_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>';
 const ARROW=d=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg>';
-const wpGrid=document.createElement('div'),wpPrev=document.createElement('button'),wpNext=document.createElement('button'),wpCount=document.createElement('span');
-const wallPop=popout(wallT,'Wallpapers',centred(1240,860),{opened:()=>wpSync()});
-wpGrid.className='wp-grid';wpCount.className='wp-count';
-wpPrev.className='wp-btn prev';wpPrev.type='button';wpPrev.setAttribute('aria-label','Previous wallpaper');wpPrev.innerHTML=ARROW('M15 6l-6 6 6 6');
-wpNext.className='wp-btn next';wpNext.type='button';wpNext.setAttribute('aria-label','Next wallpaper');wpNext.innerHTML=ARROW('M9 6l6 6-6 6');
-WALLS.forEach((p,i)=>{const f=document.createElement('figure');f.className='wp-item';const im=document.createElement('img');im.src=p.src;im.alt='serene.aiart wallpaper '+(i+1);im.loading='lazy';im.decoding='async';im.draggable=false;
-  const a=document.createElement('a');a.className='wp-dl';a.href=p.src;a.download='serene-aiart-wallpaper-'+p.n+'.webp';a.innerHTML=DL_SVG+'Download';f.append(im,a);wpGrid.appendChild(f)});
-wallPop.win.append(wpGrid,wpPrev,wpNext);wallPop.win.querySelector('.msg-head').insertBefore(wpCount,wallPop.win.querySelector('.msg-x'));
-const wpItems=[...wpGrid.children];
-// the first wallpaper fully on screen (or the one nearest the left edge mid-scroll)
-const wpVis=()=>{const l=wpGrid.scrollLeft,r=l+wpGrid.clientWidth;return wpItems.map((it,i)=>it.offsetLeft>=l-1&&it.offsetLeft+it.offsetWidth<=r+1?i:-1).filter(i=>i>=0)};
-function wpCur(){const v=wpVis();if(v.length)return v[0];const x=wpGrid.scrollLeft+24;let b=0,bd=1e9;wpItems.forEach((it,i)=>{const d=Math.abs(it.offsetLeft-x);if(d<bd){bd=d;b=i}});return b}
-function wpGo(i){const it=wpItems[clamp(i,0,wpItems.length-1)];wpGrid.scrollTo({left:it.offsetLeft-24,behavior:RM?'auto':'smooth'})}
-// counter shows which wallpapers are fully on screen, e.g. 04–06 / 18
-function wpSync(){const max=wpGrid.scrollWidth-wpGrid.clientWidth,l=wpGrid.scrollLeft;wpPrev.disabled=l<=2;wpNext.disabled=l>=max-2;
-  const vis=wpVis();const a=vis.length?vis[0]:wpCur(),b=vis.length?vis[vis.length-1]:a;
-  wpCount.textContent=(a===b?pad2(a+1):pad2(a+1)+'–'+pad2(b+1))+' / '+pad2(wpItems.length)}
-wpGrid.addEventListener('scroll',()=>{cancelAnimationFrame(wpGrid._r);wpGrid._r=requestAnimationFrame(wpSync)},{passive:true});
-wpPrev.addEventListener('click',()=>{wpGo(wpCur()-1);ping(2,.04)});
-wpNext.addEventListener('click',()=>{wpGo(wpCur()+1);ping(6,.04)});
-// a mouse wheel moves one wallpaper per notch; sideways trackpad swipes scroll natively
-{let last=0;wpGrid.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>=Math.abs(e.deltaY))return;e.preventDefault();const now=performance.now();if(now-last<280||Math.abs(e.deltaY)<4)return;last=now;wpGo(wpCur()+(e.deltaY>0?1:-1))},{passive:false})}
-// drag with the mouse (touch swipes natively)
-{let sx=0,sl=0,down=false,moved=false;
-  wpGrid.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0||e.target.closest('.wp-dl'))return;down=true;moved=false;sx=e.clientX;sl=wpGrid.scrollLeft});
-  addEventListener('pointermove',e=>{if(!down)return;const dx=e.clientX-sx;if(!moved&&Math.abs(dx)>4){moved=true;wpGrid.classList.add('drag')}if(moved)wpGrid.scrollLeft=sl-dx});
-  addEventListener('pointerup',()=>{if(!down)return;down=false;if(moved){wpGrid.classList.remove('drag');wpGo(wpCur());setTimeout(()=>moved=false,0)}})}
-addEventListener('keydown',e=>{if(!wallPop.open)return;if(e.key==='ArrowRight'){e.preventDefault();wpGo(wpCur()+1)}else if(e.key==='ArrowLeft'){e.preventDefault();wpGo(wpCur()-1)}});
+const mk=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html)e.innerHTML=html;return e};
+const WN=WALLS.length;let wpMode='files';
+const wallPop=popout(wallT,'Wallpapers',centred(1240,860),{after:()=>{if(wpMode==='view')wpReset()}});
+const wpWin=wallPop.win,wpHead=wpWin.querySelector('.msg-head');
+const wpFiles=mk('div','wp-files'),wpView=mk('div','wp-view'),wpTrack=mk('div','wp-track'),wpCount=mk('span','wp-count');
+const wpBack=mk('button','wp-back',ARROW('M15 6l-6 6 6 6')+'All'),wpPrev=mk('button','wp-btn prev',ARROW('M15 6l-6 6 6 6')),wpNext=mk('button','wp-btn next',ARROW('M9 6l6 6-6 6'));
+wpBack.type=wpPrev.type=wpNext.type='button';wpBack.setAttribute('aria-label','Back to all wallpapers');wpPrev.setAttribute('aria-label','Previous wallpaper');wpNext.setAttribute('aria-label','Next wallpaper');
+wpHead.insertBefore(wpBack,wpHead.firstChild);wpHead.insertBefore(wpCount,wpHead.querySelector('.msg-x'));
+// files: square icons with a file name, like a folder
+const fileImgs=WALLS.map((p,i)=>{const b=mk('button','wp-file');b.type='button';b.setAttribute('aria-label','Open wallpaper '+(i+1));
+  const im=mk('img');im.src='art/wallpapers/thumbs/'+p.n+'.webp';im.alt='';im.loading='lazy';im.decoding='async';const nm=mk('span');nm.textContent='wallpaper-'+p.n;
+  b.append(im,nm);b.addEventListener('click',()=>wpOpen(i));wpFiles.appendChild(b);return im});
+// viewer: every wallpaper in a row that glides on a spring
+const wpItems=WALLS.map((p,i)=>{const f=mk('figure','wp-item'),im=mk('img');im.src=p.src;im.alt='serene.aiart wallpaper '+(i+1);im.loading='lazy';im.decoding='async';im.draggable=false;
+  const a=mk('a','wp-dl',DL_SVG+'Download');a.href=p.src;a.download='serene-aiart-wallpaper-'+p.n+'.webp';f.append(im,a);wpTrack.appendChild(f);return f});
+wpView.appendChild(wpTrack);wpWin.append(wpFiles,wpView,wpPrev,wpNext);
+const blurN=document.getElementById('wpblurN');
+let wpPos=0,wpTgt=0,wpVel=0,wpIW=300,wpGap=20,wpRun=false,wpLast=0,wpDrag=null;
+const wpStep=()=>wpIW+wpGap;
+function wpLayout(){const h=wpView.clientHeight,ih=Math.max(80,h-4-22-42);wpIW=Math.max(60,Math.min(ih*9/16,wpView.clientWidth-120));wpGap=Math.round(clamp(wpView.clientWidth*.022,14,28));
+  wpView.style.setProperty('--iw',wpIW+'px');wpView.style.setProperty('--wg',wpGap+'px');wpRender()}
+function wpRender(){const x=wpView.clientWidth/2-wpIW/2-wpPos*wpStep();wpTrack.style.transform='translate3d('+x.toFixed(2)+'px,0,0)';
+  wpItems.forEach((it,i)=>{const d=Math.min(1,Math.abs(i-wpPos));it.style.transform='scale('+(1-.1*d).toFixed(4)+')';it.style.opacity=(1-.55*d).toFixed(3)});
+  // motion blur: horizontal only, scaled to how fast the strip is moving
+  const b=RM?0:Math.min(14,Math.abs(wpVel)*wpStep()/210);blurN.setAttribute('stdDeviation',b.toFixed(2)+' 0');wpView.style.filter=b>.35?'url(#wpblur)':'none';
+  const k=Math.round(clamp(wpPos,0,WN-1));wpCount.textContent=wpMode==='view'?pad2(k+1)+' / '+pad2(WN):WN+' items';wpPrev.disabled=wpTgt<=0;wpNext.disabled=wpTgt>=WN-1}
+function wpTick(now){const dt=Math.min(.05,(now-wpLast)/1000||.016);wpLast=now;
+  if(!wpDrag){const k=150,c=2*Math.sqrt(k)*.92;wpVel+=(k*(wpTgt-wpPos)-c*wpVel)*dt;wpPos+=wpVel*dt}
+  if(!wpDrag&&Math.abs(wpTgt-wpPos)<.0006&&Math.abs(wpVel)<.002){wpPos=wpTgt;wpVel=0;wpRender();wpRun=false;return}
+  wpRender();requestAnimationFrame(wpTick)}
+function wpKick(){if(wpRun)return;wpRun=true;wpLast=performance.now();requestAnimationFrame(wpTick)}
+function wpTo(i){const t=clamp(Math.round(i),0,WN-1);if(t!==wpTgt)ping(2+(t%5),.035);wpTgt=t;if(RM){wpPos=wpTgt;wpVel=0;wpRender()}else wpKick()}
+wpPrev.addEventListener('click',()=>wpTo(wpTgt-1));wpNext.addEventListener('click',()=>wpTo(wpTgt+1));
+// drag and flick (mouse, pen or touch); a tap on a side wallpaper brings it to the middle
+wpTrack.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('.wp-dl'))return;wpDrag={x:e.clientX,pos:wpPos,lx:e.clientX,lt:performance.now(),moved:false,id:e.pointerId};wpVel=0;wpTrack.setPointerCapture(e.pointerId)});
+wpTrack.addEventListener('pointermove',e=>{const d=wpDrag;if(!d||e.pointerId!==d.id)return;const dx=e.clientX-d.x;if(!d.moved&&Math.abs(dx)>5){d.moved=true;wpTrack.classList.add('drag')}if(!d.moved)return;
+  const now=performance.now(),dt=Math.max(.008,(now-d.lt)/1000),v=-(e.clientX-d.lx)/wpStep()/dt;wpVel=lerp(wpVel,v,.45);d.lx=e.clientX;d.lt=now;
+  let p=d.pos-dx/wpStep();if(p<0)p*=.35;else if(p>WN-1)p=WN-1+(p-WN+1)*.35;wpPos=p;wpRender()});
+const wpUp=e=>{const d=wpDrag;if(!d)return;wpDrag=null;wpTrack.classList.remove('drag');
+  if(d.moved){if(performance.now()-d.lt>90)wpVel*=.2;wpTo(wpPos+clamp(wpVel*.22,-4,4));wpKick()}
+  else{const it=e.target.closest&&e.target.closest('.wp-item');const i=wpItems.indexOf(it);if(i>=0&&i!==wpTgt)wpTo(i)}};
+wpTrack.addEventListener('pointerup',wpUp);wpTrack.addEventListener('pointercancel',wpUp);
+// wheel and trackpad: one wallpaper per gesture step
+{let acc=0,lock=0;wpView.addEventListener('wheel',e=>{e.preventDefault();const d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;acc+=d;const now=performance.now();
+  if(now<lock){acc=0;return}if(Math.abs(acc)>40){wpTo(wpTgt+Math.sign(acc));acc=0;lock=now+230}},{passive:false})}
+// opening one: the square icon grows into its place in the viewer
+function wpFly(img,from,to,r0,r1,done){const f=mk('img','wp-flip');f.src=img;f.alt='';const put=(r,rad)=>{f.style.left=r.left+'px';f.style.top=r.top+'px';f.style.width=r.width+'px';f.style.height=r.height+'px';f.style.borderRadius=rad+'px'};
+  f.style.transition='none';put(from,r0);document.body.appendChild(f);void f.offsetWidth;f.style.transition='';put(to,r1);setTimeout(()=>{done();f.remove()},RM?0:540)}
+function wpOpen(i){if(wpMode!=='files'||wallPop.busy)return;wpMode='view';const from=fileImgs[i].getBoundingClientRect();
+  wpWin.classList.add('viewing');wpLayout();wpPos=wpTgt=i;wpVel=0;wpRender();
+  const big=wpItems[i].querySelector('img'),to=big.getBoundingClientRect();big.style.visibility='hidden';fileImgs[i].style.visibility='hidden';
+  wpFly(WALLS[i].src,from,to,10,16,()=>{big.style.visibility='';fileImgs[i].style.visibility=''});ping(5,.05);log('you opened a wallpaper','wallone')}
+function wpClose(){if(wpMode!=='view')return;wpMode='files';const i=Math.round(clamp(wpPos,0,WN-1)),big=wpItems[i].querySelector('img'),from=big.getBoundingClientRect(),th=fileImgs[i];
+  th.scrollIntoView({block:'nearest'});wpWin.classList.remove('viewing');wpRender();
+  const pr=wpFiles.getBoundingClientRect(),tr=th.getBoundingClientRect(),s=.96,to={left:pr.left+(tr.left-pr.left-pr.width/2)/s+pr.width/2,top:pr.top+(tr.top-pr.top-pr.height/2)/s+pr.height/2,width:tr.width/s,height:tr.height/s};
+  big.style.visibility='hidden';th.style.visibility='hidden';wpFly(WALLS[i].src,from,to,16,10,()=>{big.style.visibility='';th.style.visibility=''})}
+function wpReset(){wpMode='files';wpWin.classList.remove('viewing');wpVel=0;wpRender()}
+wpBack.addEventListener('click',wpClose);
+addEventListener('keydown',e=>{if(!wallPop.open||wpMode!=='view')return;if(e.key==='Escape'){e.stopImmediatePropagation();wpClose()}else if(e.key==='ArrowRight'){e.preventDefault();wpTo(wpTgt+1)}else if(e.key==='ArrowLeft'){e.preventDefault();wpTo(wpTgt-1)}},true);
+addEventListener('resize',()=>{if(wpMode==='view')wpLayout()});
+wpRender();
 tap(wallT,()=>{wallPop.show();log('you opened the wallpapers','walls')});
 
 /* ---------- word split, filters, theme ---------- */
