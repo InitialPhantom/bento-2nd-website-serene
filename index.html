@@ -258,15 +258,25 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .msg-win.big .bubble{font-size:14.5px;max-width:76%}
 .msg-win.big .compose{left:18px;right:18px;bottom:18px}
 
-/* wallpapers window */
-.wp-grid{position:absolute;top:58px;left:0;right:0;bottom:0;display:flex;gap:14px;padding:4px 22px 22px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;opacity:0;transition:opacity .2s}
+/* wallpapers window: a sideways strip with arrows, drag, wheel and swipe */
+.wp-grid{position:absolute;top:58px;left:0;right:0;bottom:0;display:flex;gap:16px;padding:4px 24px 22px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-padding-inline:24px;scrollbar-width:none;
+  cursor:grab;touch-action:pan-x;-webkit-user-select:none;user-select:none;opacity:0;transition:opacity .2s}
 .wp-grid::-webkit-scrollbar{display:none}
+.wp-grid.drag{scroll-snap-type:none;cursor:grabbing}
 .msg-win.big .wp-grid{opacity:1;transition:opacity .3s .2s}
-.wp-item{flex:none;height:100%;margin:0;display:flex;flex-direction:column;gap:10px;scroll-snap-align:center}
-.wp-item img{height:calc(100% - 42px);width:auto;aspect-ratio:9/16;object-fit:cover;border-radius:14px;background:var(--paper);display:block}
-.wp-dl{align-self:center;height:32px;padding:0 14px;border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:color .2s}
+.wp-item{flex:none;height:100%;margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;scroll-snap-align:start}
+.wp-item img{height:min(calc(100% - 42px),calc((100vw - 96px) * 16 / 9));width:auto;aspect-ratio:9/16;object-fit:cover;border-radius:14px;background:var(--paper);display:block;pointer-events:none;-webkit-user-drag:none}
+.wp-dl{height:32px;padding:0 14px;border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:color .2s}
 .wp-dl:hover{color:var(--accent)}
 .wp-dl svg{width:13px;height:13px}
+.wp-btn{position:absolute;top:calc(50% + 8px);z-index:3;width:42px;height:42px;margin-top:-21px;border-radius:50%;background:var(--paper);color:var(--ink);display:grid;place-items:center;
+  box-shadow:0 1px 2px rgba(0,0,0,.1),0 10px 22px -10px rgba(0,0,0,.4);opacity:0;transition:opacity .2s,transform .15s}
+.wp-btn svg{width:17px;height:17px}
+.wp-btn:active{transform:scale(.92)}
+.wp-btn.prev{left:14px}.wp-btn.next{right:14px}
+.msg-win.big .wp-btn{opacity:1;transition:opacity .3s .2s,transform .15s}
+.msg-win.big .wp-btn[disabled]{opacity:0;pointer-events:none}
+.wp-count{margin-left:auto;margin-right:12px;font-family:var(--f-mono);font-size:11px;font-weight:400;color:var(--ink3)}
 
 /* small controls */
 .btn{position:absolute;z-index:5;height:28px;padding:0 12px;border-radius:999px;background:var(--paper);font-size:12.5px;font-weight:500;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
@@ -384,7 +394,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
       <div class="cap" style="grid-area:np">Now playing<span id="npTc">00:00 / 00:00</span></div>
       <div class="cap" style="grid-area:pace">Pace<span id="paceVal2">1.00×</span></div>
       <div class="cap" style="grid-area:blink" id="blinkCap">Lights on</div>
-      <div class="cap" style="grid-area:walls">Wallpapers<span>05</span></div>
+      <div class="cap" style="grid-area:walls">Wallpapers<span id="wallCount"></span></div>
       <div class="cap" style="grid-area:msg">Message me</div>
     </div>
   </main>
@@ -762,7 +772,7 @@ function popout(tile,title,size,hooks={}){const ov=document.createElement('div')
     void win.offsetWidth;win.style.transition='';ov.classList.add('open');win.classList.add('big');put(size());setTimeout(()=>{P.busy=false;hooks.opened?.()},RM?0:480);ping(4,.05)};
   P.hide=()=>{if(!P.open||P.busy)return;P.busy=true;document.documentElement.style.overflow='';ov.classList.remove('open');win.classList.remove('big');put(boxOf(tile));
     setTimeout(()=>{hooks.after?.();ov.hidden=true;P.open=P.busy=false},RM?0:470)};
-  win.querySelector('.msg-x').addEventListener('click',P.hide);ov.addEventListener('click',e=>{if(e.target===ov)P.hide()});
+  let downOv=false;win.querySelector('.msg-x').addEventListener('click',P.hide);ov.addEventListener('pointerdown',e=>downOv=e.target===ov);ov.addEventListener('click',e=>{if(e.target===ov&&downOv)P.hide()});
   addEventListener('keydown',e=>{if(P.open&&e.key==='Escape')P.hide()});addEventListener('resize',()=>{if(P.open&&!P.busy)put(size())});return P}
 
 const msgT=$('#msg'),compose=$('#compose');
@@ -772,31 +782,59 @@ msgT.addEventListener('click',()=>msgPop.show());
 msgIn.addEventListener('focus',()=>{if(!msgPop.open)msgPop.show()});
 
 /* ---------- wallpapers: stills from the films, dithered in the tile, full colour in the window ---------- */
-const WALLS=['01','02','03','04','05'].map(n=>{const img=new Image();img.decoding='async';img.src='art/wallpapers/'+n+'.webp';return{n,img,src:img.src,dz:null}});
+// files are art/wallpapers/01.webp … NN.webp; raise WALL_N when adding more. The tile previews the first TILE_N.
+const WALL_N=18,TILE_N=7;
+const WALLS=Array.from({length:WALL_N},(_,i)=>{const n=pad2(i+1);return{n,src:'art/wallpapers/'+n+'.webp',img:null,dz:null}});
+WALLS.slice(0,TILE_N).forEach(p=>{p.img=new Image();p.img.decoding='async';p.img.src=p.src});
+$('#wallCount').textContent=pad2(WALL_N);
 function coverImg(c,m,x,y,w,h){const k=Math.max(w/m.naturalWidth,h/m.naturalHeight),dw=m.naturalWidth*k,dh=m.naturalHeight*k;c.drawImage(m,x+(w-dw)/2,y+(h-dh)/2,dw,dh)}
-function wallDither(p,w,h){if(p.dz&&p.dz.width===w&&p.dz.height===h&&p.dk===C.dark)return p.dz;if(!p.img.naturalWidth)return null;
+function wallDither(p,w,h){if(p.dz&&p.dz.width===w&&p.dz.height===h&&p.dk===C.dark)return p.dz;if(!p.img||!p.img.naturalWidth)return null;
   const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d',{willReadFrequently:true});x.fillStyle=C.paper;x.fillRect(0,0,w,h);coverImg(x,p.img,0,0,w,h);
   let im;try{im=x.getImageData(0,0,w,h)}catch{return null}ditherImg(im);x.putImageData(im,0,0);p.dz=cv;p.dk=C.dark;return cv}
-const wallT=$('#walls');
-const walls=scene(wallT,$('#walls canvas'),(c,w,h,t,dt,S)=>{const st=S.st,n=WALLS.length,pad=14,ch=Math.max(10,Math.round(h-pad*2)),cw=Math.round(ch*9/16),gap=10;
+const wallT=$('#walls'),shown=WALLS.slice(0,TILE_N);
+const walls=scene(wallT,$('#walls canvas'),(c,w,h,t,dt,S)=>{const st=S.st,n=shown.length,pad=14,ch=Math.max(10,Math.round(h-pad*2)),cw=Math.round(ch*9/16),gap=10;
   const step=Math.min(cw+gap,(w-pad*2-cw)/(n-1)),x0=(w-(step*(n-1)+cw))/2;
   st.rv=lerp(st.rv,S.over&&!editing()?1:0,Math.min(1,dt*6+.02));
   let hi=-1;if(S.over)for(let i=n-1;i>=0;i--){const x=x0+i*step;if(S.mx>=x&&S.mx<=x+cw){hi=i;break}}
-  const order=[...WALLS.keys()].filter(i=>i!==hi);if(hi>=0)order.push(hi);
-  for(const i of order){const p=WALLS[i];p.lift=lerp(p.lift||0,i===hi?1:0,Math.min(1,dt*10+.02));const x=Math.round(x0+i*step),y=pad-p.lift*6;
+  const order=[...shown.keys()].filter(i=>i!==hi);if(hi>=0)order.push(hi);
+  for(const i of order){const p=shown[i];p.lift=lerp(p.lift||0,i===hi?1:0,Math.min(1,dt*10+.02));const x=Math.round(x0+i*step),y=pad-p.lift*6;
     c.save();c.beginPath();c.roundRect(x,y,cw,ch,8);c.clip();c.fillStyle=C.paper;c.fillRect(x,y,cw,ch);
     const d=wallDither(p,cw,ch);if(d){c.imageSmoothingEnabled=false;c.drawImage(d,x,y,cw,ch)}
-    if(st.rv>.01&&p.img.naturalWidth){c.globalAlpha=st.rv;c.imageSmoothingEnabled=true;coverImg(c,p.img,x,y,cw,ch);c.globalAlpha=1}
+    if(st.rv>.01&&p.img&&p.img.naturalWidth){c.globalAlpha=st.rv;c.imageSmoothingEnabled=true;coverImg(c,p.img,x,y,cw,ch);c.globalAlpha=1}
     c.restore();c.lineWidth=2;c.strokeStyle=C.tile;c.beginPath();c.roundRect(x,y,cw,ch,8);c.stroke()}
 },{rv:0});
-WALLS.forEach(p=>p.img.addEventListener('load',()=>paint(walls,0)));
+shown.forEach(p=>p.img.addEventListener('load',()=>paint(walls,0)));
+
 const DL_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>';
-const wallPop=popout(wallT,'Wallpapers',centred(980,640));
-{const grid=document.createElement('div');grid.className='wp-grid';
-  WALLS.forEach((p,i)=>{const f=document.createElement('figure');f.className='wp-item';const im=document.createElement('img');im.src=p.src;im.alt='serene.aiart wallpaper '+(i+1);im.loading='lazy';im.decoding='async';
-    const a=document.createElement('a');a.className='wp-dl';a.href=p.src;a.download='serene-aiart-wallpaper-'+p.n+'.webp';a.innerHTML=DL_SVG+'Download';f.append(im,a);grid.appendChild(f)});
-  grid.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){grid.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
-  wallPop.win.appendChild(grid)}
+const ARROW=d=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="'+d+'"/></svg>';
+const wpGrid=document.createElement('div'),wpPrev=document.createElement('button'),wpNext=document.createElement('button'),wpCount=document.createElement('span');
+const wallPop=popout(wallT,'Wallpapers',centred(1240,860),{opened:()=>wpSync()});
+wpGrid.className='wp-grid';wpCount.className='wp-count';
+wpPrev.className='wp-btn prev';wpPrev.type='button';wpPrev.setAttribute('aria-label','Previous wallpaper');wpPrev.innerHTML=ARROW('M15 6l-6 6 6 6');
+wpNext.className='wp-btn next';wpNext.type='button';wpNext.setAttribute('aria-label','Next wallpaper');wpNext.innerHTML=ARROW('M9 6l6 6-6 6');
+WALLS.forEach((p,i)=>{const f=document.createElement('figure');f.className='wp-item';const im=document.createElement('img');im.src=p.src;im.alt='serene.aiart wallpaper '+(i+1);im.loading='lazy';im.decoding='async';im.draggable=false;
+  const a=document.createElement('a');a.className='wp-dl';a.href=p.src;a.download='serene-aiart-wallpaper-'+p.n+'.webp';a.innerHTML=DL_SVG+'Download';f.append(im,a);wpGrid.appendChild(f)});
+wallPop.win.append(wpGrid,wpPrev,wpNext);wallPop.win.querySelector('.msg-head').insertBefore(wpCount,wallPop.win.querySelector('.msg-x'));
+const wpItems=[...wpGrid.children];
+// the first wallpaper fully on screen (or the one nearest the left edge mid-scroll)
+const wpVis=()=>{const l=wpGrid.scrollLeft,r=l+wpGrid.clientWidth;return wpItems.map((it,i)=>it.offsetLeft>=l-1&&it.offsetLeft+it.offsetWidth<=r+1?i:-1).filter(i=>i>=0)};
+function wpCur(){const v=wpVis();if(v.length)return v[0];const x=wpGrid.scrollLeft+24;let b=0,bd=1e9;wpItems.forEach((it,i)=>{const d=Math.abs(it.offsetLeft-x);if(d<bd){bd=d;b=i}});return b}
+function wpGo(i){const it=wpItems[clamp(i,0,wpItems.length-1)];wpGrid.scrollTo({left:it.offsetLeft-24,behavior:RM?'auto':'smooth'})}
+// counter shows which wallpapers are fully on screen, e.g. 04–06 / 18
+function wpSync(){const max=wpGrid.scrollWidth-wpGrid.clientWidth,l=wpGrid.scrollLeft;wpPrev.disabled=l<=2;wpNext.disabled=l>=max-2;
+  const vis=wpVis();const a=vis.length?vis[0]:wpCur(),b=vis.length?vis[vis.length-1]:a;
+  wpCount.textContent=(a===b?pad2(a+1):pad2(a+1)+'–'+pad2(b+1))+' / '+pad2(wpItems.length)}
+wpGrid.addEventListener('scroll',()=>{cancelAnimationFrame(wpGrid._r);wpGrid._r=requestAnimationFrame(wpSync)},{passive:true});
+wpPrev.addEventListener('click',()=>{wpGo(wpCur()-1);ping(2,.04)});
+wpNext.addEventListener('click',()=>{wpGo(wpCur()+1);ping(6,.04)});
+// a mouse wheel moves one wallpaper per notch; sideways trackpad swipes scroll natively
+{let last=0;wpGrid.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>=Math.abs(e.deltaY))return;e.preventDefault();const now=performance.now();if(now-last<280||Math.abs(e.deltaY)<4)return;last=now;wpGo(wpCur()+(e.deltaY>0?1:-1))},{passive:false})}
+// drag with the mouse (touch swipes natively)
+{let sx=0,sl=0,down=false,moved=false;
+  wpGrid.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0||e.target.closest('.wp-dl'))return;down=true;moved=false;sx=e.clientX;sl=wpGrid.scrollLeft});
+  addEventListener('pointermove',e=>{if(!down)return;const dx=e.clientX-sx;if(!moved&&Math.abs(dx)>4){moved=true;wpGrid.classList.add('drag')}if(moved)wpGrid.scrollLeft=sl-dx});
+  addEventListener('pointerup',()=>{if(!down)return;down=false;if(moved){wpGrid.classList.remove('drag');wpGo(wpCur());setTimeout(()=>moved=false,0)}})}
+addEventListener('keydown',e=>{if(!wallPop.open)return;if(e.key==='ArrowRight'){e.preventDefault();wpGo(wpCur()+1)}else if(e.key==='ArrowLeft'){e.preventDefault();wpGo(wpCur()-1)}});
 tap(wallT,()=>{wallPop.show();log('you opened the wallpapers','walls')});
 
 /* ---------- word split, filters, theme ---------- */

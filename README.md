@@ -17,7 +17,7 @@ python -m http.server 8000
 - **Now playing**: types out the current film's caption and song credit, has a sound toggle for that film, and a scrubber across all films.
 - **Lights on / Lights out**: a dithered eyeball in the middle of its tile that watches the cursor. Click it to switch the whole page to dark mode and back; the label reads Lights on in light mode and Lights out in dark mode, and the choice is remembered in that browser.
 - **Pace dial**: speeds up or slows down every animation and the films themselves.
-- **Wallpapers**: stills from the films as a fan of dithered cards. Clicking opens a window with each one in full colour and a Download button.
+- **Wallpapers**: stills from the films as a fan of dithered cards. Clicking opens a large window with all of them in a sideways strip (arrows, drag, mouse wheel, swipe or arrow keys), each with a Download button.
 - **Message me**: a small chat box that opens into a window.
 - **Sound**: soft chimes made with the Web Audio API, plus the films' own audio. Both can be muted from the footer.
 
@@ -43,4 +43,4 @@ Notes:
 - **Message me**: sent with [FormSubmit](https://formsubmit.co), so no server is needed. Set `FORM_TO` near the bottom of `index.html` to your email, send one test message from the live site, and click the confirmation link FormSubmit emails you. FormSubmit then gives you a random address; put that in `FORM_TO` instead so your email isn't in the page. The tile asks for the visitor's message, then their reply email. Until `FORM_TO` is set, it tells visitors their message wasn't sent.
 - **Films**: three reels from @serene.aiart live in `art/` and are listed in the `ART` array near the bottom of `index.html`, with their caption and post link. Each entry has an `audio` field for the song credit ("Song · Artist"); it shows next to the title in the captions, Now playing and the viewer. The credits are still empty. To add a piece, drop a video into `art/`, add an entry, and add a film tile with a new `data-i` so no piece repeats.
 - The "latest" line in the profile names the newest piece; update it when you post.
-- **Wallpapers**: the images live in `art/wallpapers/` (01–05.webp) and are listed in the `WALLS` array in `index.html`. Add a file and its number to add one.
+- **Wallpapers**: the images live in `art/wallpapers/` as 01.webp, 02.webp and so on. To add one, drop in the next number and raise `WALL_N` in `index.html`. The tile previews the first few; the window shows them all with arrows, drag, wheel and swipe.
