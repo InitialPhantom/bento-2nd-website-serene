@@ -65,8 +65,8 @@ a{color:inherit}
 .w-fog:hover{animation:fog calc(3.2s / var(--pace)) ease-in-out infinite}
 .w-blink:hover span{animation:blinkw calc(1.6s / var(--pace)) steps(1) infinite;animation-delay:calc(var(--i) * -110ms)}
 @keyframes blinkw{0%,100%{opacity:1}40%{opacity:.12}52%{opacity:1}}
-.last button{color:var(--ink2);text-align:left;font:inherit}
-.last button:hover{color:var(--ink)}
+.last button{color:var(--ink3);text-align:left;font:inherit;transition:color .2s}
+.last button:hover{color:var(--ink2)}
 .socials{margin-top:14px;display:flex;flex-wrap:nowrap;gap:6px}
 .ig{flex:none;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px 0 8px;border-radius:999px;background:var(--tile);color:var(--ink);text-decoration:none;font-size:12px;font-weight:500;transition:background .2s}
 .ig svg{width:14px;height:14px}
@@ -82,8 +82,8 @@ a{color:inherit}
 .w-slow:hover{letter-spacing:.18em}
 .sub{margin:16px 0 0;color:var(--ink2);font-size:15px;font-weight:500;line-height:1.75}
 .sub b{color:var(--ink);font-weight:500}
-.last{margin-top:22px;display:flex;align-items:center;gap:8px;color:var(--ink3)}
-.last::before{content:"";width:6px;height:6px;border-radius:50%;background:#33b35a}
+.last{margin-top:16px;display:flex;align-items:baseline;gap:7px;color:var(--ink3);font-size:10px;line-height:1.6;opacity:.85}
+.last::before{content:"";flex:none;width:5px;height:5px;border-radius:50%;background:#33b35a;opacity:.7;transform:translateY(-1px)}
 .last b{color:var(--ink2);font-weight:400}
 .tabs{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:28px}
 .tabs button{font-size:14px;color:var(--ink3);transition:color .2s}
@@ -92,7 +92,7 @@ a{color:inherit}
 
 /* grid */
 .gridwrap{container-type:inline-size;min-width:0}
-.grid{--capH:34px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:calc((100cqi - 3 * var(--gap)) / 4 + var(--capH));column-gap:var(--gap);row-gap:calc(var(--gap) - 6px);
+.grid{--capH:34px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(2,calc((100cqi - 3 * var(--gap)) / 4 * .62 + var(--capH)));grid-auto-rows:calc((100cqi - 3 * var(--gap)) / 4 + var(--capH));column-gap:var(--gap);row-gap:calc(var(--gap) - 6px);
   grid-template-areas:
   "feature f2 f3 f4"
   "feature f2 f3 f4"
@@ -316,7 +316,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   :root{--gap:10px;--r:16px}
   /* phones: the three films side by side as portrait cards, everything else in short full-width rows */
   .grid{grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:auto;
-    grid-template-rows:calc((100cqi - 3 * var(--gap)) / 4 * 1.62 + var(--gap)) calc((100cqi - 3 * var(--gap)) / 4 + var(--capH)) calc(140px + var(--capH));
+    grid-template-rows:calc((100cqi - 3 * var(--gap)) / 4 * 1.3 + var(--gap)) calc((100cqi - 3 * var(--gap)) / 4 + var(--capH)) calc(140px + var(--capH));
     grid-template-areas:"feature feature feature f2 f2 f2 f3 f3 f3 f4 f4 f4" "np np np pace pace pace blink blink blink walls walls walls" "msg msg msg msg msg msg msg msg msg msg msg msg"}
   .grid .film{height:calc(100% - var(--gap))}
   .film .fn{left:8px;bottom:8px}
@@ -492,30 +492,54 @@ const local=(S,e)=>{if(!e)return[S.w/2,S.h/2];const r=S.c.getBoundingClientRect(
 
 /* ---------- planet ---------- */
 const planetC=$('#planet');
-const OBJS=[[0,'house'],[.9,'tree'],[1.5,'tree'],[2.6,'rock'],[3.5,'tree'],[4.4,'tree'],[5.4,'rock']];
-function onRim(o,cx,cy,R,a,fn){o.save();o.translate(cx,cy);o.rotate(a);o.translate(0,-R+1);fn();o.restore()}
+/* surface map: soft mare patches, craters and grain, made once as a lon/lat ink map */
+const TW=512,TH=256;let TEX=null;
+function noise3(x,y,z){const X=Math.floor(x),Y=Math.floor(y),Z=Math.floor(z),fx=x-X,fy=y-Y,fz=z-Z,u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy),w=fz*fz*(3-2*fz);
+  const h=(a,b,c)=>rnd(a*157+b*113+c*271);
+  return lerp(lerp(lerp(h(X,Y,Z),h(X+1,Y,Z),u),lerp(h(X,Y+1,Z),h(X+1,Y+1,Z),u),v),lerp(lerp(h(X,Y,Z+1),h(X+1,Y,Z+1),u),lerp(h(X,Y+1,Z+1),h(X+1,Y+1,Z+1),u),v),w)}
+function fbm(x,y,z,n){let a=0,f=1,w=1,m=0;for(let i=0;i<n;i++){a+=noise3(x*f,y*f,z*f)*w;m+=w;w*=.5;f*=2.03}return a/m}
+function makeTex(){TEX=new Float32Array(TW*TH);
+  const cr=[];for(let i=0;i<22;i++){const z=rnd(i+40)*2-1,a=rnd(i+80)*TAU,q=Math.sqrt(1-z*z);cr.push([q*Math.cos(a),z,q*Math.sin(a),.05+rnd(i+120)*rnd(i+160)*.22])}
+  for(let y=0;y<TH;y++){const la=(y+.5)/TH*Math.PI-Math.PI/2,cl=Math.cos(la),py=Math.sin(la);
+    for(let x=0;x<TW;x++){const lo=(x+.5)/TW*TAU,px=cl*Math.sin(lo),pz=cl*Math.cos(lo);
+      const m=fbm(px*1.6+7,py*1.6+3,pz*1.6+5,4),sea=clamp((m-.5)/.08,0,1);
+      let k=.1+sea*.34+(fbm(px*9,py*9,pz*9,3)-.5)*.3+(fbm(px*26,py*26,pz*26,2)-.5)*.16;
+      for(const[cx,cy,cz,r]of cr){const q=px*cx+py*cy+pz*cz;if(q<Math.cos(r*1.25))continue;const d=Math.acos(Math.min(1,q))/r;k+=d<.8?.22*(1-d*d*.6):-.18*(1-Math.abs(d-1)/.25)}
+      TEX[y*TW+x]=clamp(k,0,1)}}}
+/* the axis leans in the frame and tips toward us, so the spin reads as a globe turning */
+const TILT=-.38,TIP=.32;
+function globeMap(st,R){const n=Math.ceil(R*2)+2;if(st._gn===n)return;st._gn=n;st._gc=document.createElement('canvas');st._gc.width=st._gc.height=n;st._gx=st._gc.getContext('2d');st._gi=st._gx.createImageData(n,n);
+  const P=[];const ct=Math.cos(TILT),sn=Math.sin(TILT),cp=Math.cos(TIP),sp=Math.sin(TIP),c0=n/2;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){const dx=(x+.5-c0)/R,dy=(y+.5-c0)/R,d2=dx*dx+dy*dy,edge=clamp((1-Math.sqrt(d2))*R+.5,0,1);if(edge<=0)continue;
+    const nz=Math.sqrt(Math.max(0,1-d2)),x1=dx*ct+dy*sn,y1=-dx*sn+dy*ct,y2=y1*cp-nz*sp,z2=y1*sp+nz*cp;
+    const lat=Math.asin(clamp(-y2,-1,1)),lon=Math.atan2(x1,z2);
+    P.push(y*n+x,dx,dy,nz,edge,Math.min(TH-1,Math.floor((lat+Math.PI/2)/Math.PI*TH))*TW,lon/TAU*TW)}
+  st._gp=Float32Array.from(P)}
+function drawGlobe(o,st,cx,cy,R,L,nk){if(!TEX)makeTex();globeMap(st,R);
+  const P=st._gp,d=st._gi.data,n=st._gn,off=-st.rot/TAU*TW;d.fill(0);
+  /* shadow and surface add up, so the markings stay readable on the night side too */
+  for(let i=0;i<P.length;i+=7){const lam=Math.max(0,P[i+1]*L[0]+P[i+2]*L[1]+P[i+3]*L[2]);
+    let u=Math.floor(P[i+6]+off)%TW;if(u<0)u+=TW;const a=TEX[P[i+5]+u];
+    const shade=1-Math.pow(lam,.7),k=inv(clamp(.02+shade*lerp(.42,.6,nk)+nk*.14+a*.62,.02,.92)),v=Math.round(255*(1-k)),p=P[i]*4;
+    d[p]=d[p+1]=d[p+2]=v;d[p+3]=Math.round(255*P[i+4])}
+  st._gx.putImageData(st._gi,0,0);o.filter='none';o.drawImage(st._gc,cx-n/2,cy-n/2)}
 const inv=v=>C.dark?1-v:v,GI=v=>G(inv(v));
 const planet=scene(planetC,planetC,(c,w,h,t,dt,S)=>{const st=S.st;
   if(!st.drag){st.rot+=(st.vel+.2)*dt;st.vel*=Math.pow(.15,dt)}
   st.nk=lerp(st.nk,st.night?1:0,Math.min(1,dt*3+.02));const nk=st.nk;
-  const cx=w/2,cy=h*.47,R=Math.min(w,h)*.29;
-  dither(S,2,o=>{ell(o,cx,cy+R*1.48,R*.75,R*.1,G(.18));
-    for(const[a,k]of OBJS)onRim(o,cx,cy,R,st.rot+a,()=>{
-      if(k==='house'){o.fillStyle=GI(lerp(.25,.6,nk));o.fillRect(-8,-13,16,14);o.beginPath();o.moveTo(-11,-12);o.lineTo(0,-23);o.lineTo(11,-12);o.closePath();o.fillStyle=GI(.85);o.fill()}
-      if(k==='tree'){o.fillStyle=GI(.9);o.fillRect(-1,-9,2,10);gsphere(o,0,-15,6.5,inv(.35),inv(1))}
-      if(k==='rock')gsphere(o,0,-2,4.5,inv(.2),inv(.8))});
-    gsphere(o,cx,cy,R,inv(lerp(.06,.55,nk)),inv(lerp(.82,1,nk)));
-    });
+  const cx=w/2,cy=h/2,R=Math.min(w,h)*.31;
   const sa=-st.rot*.35-1.2,sx=cx+Math.cos(sa)*R*1.4,sy=cy+Math.sin(sa)*R*1.4;
+  const lx=Math.cos(sa),ly=Math.sin(sa),lz=.6,ll=Math.hypot(lx,ly,lz);
+  dither(S,1,o=>drawGlobe(o,st,cx,cy,R,[lx/ll,ly/ll,lz/ll],nk));
   c.globalAlpha=1-nk;c.beginPath();c.arc(sx,sy,R*.12,0,TAU);c.fillStyle=C.accent;c.fill();
   c.globalAlpha=nk;c.lineWidth=1.2;c.strokeStyle=C.ink;c.beginPath();c.arc(sx,sy,R*.1,0,TAU);c.stroke();
   for(let i=0;i<10;i++){const a=rnd(i)*TAU,rr=R*(1.25+rnd(i+3)*.35);c.globalAlpha=nk*(.4+.6*Math.abs(Math.sin(t*1.5+i)));c.fillStyle=C.ink2;c.fillRect(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr,1.4,1.4)}
-  c.globalAlpha=nk;onRim(c,cx,cy,R,st.rot,()=>{c.fillStyle=C.accent;c.fillRect(-4,-9,4,4)});c.globalAlpha=1;
+  c.globalAlpha=1;
 },{rot:0,vel:0,nk:0,night:false,drag:false});
 {let down=null;const S=planet;
-  const ang=e=>{const r=planetC.getBoundingClientRect();return Math.atan2(e.clientY-r.top-r.height*.47,e.clientX-r.left-r.width/2)};
-  planetC.addEventListener('pointerdown',e=>{planetC.setPointerCapture(e.pointerId);down={a:ang(e),t:performance.now(),moved:0,lt:performance.now()};S.st.drag=true;S.st.vel=0});
-  planetC.addEventListener('pointermove',e=>{if(!down)return;const a=ang(e);let d=a-down.a;if(d>Math.PI)d-=TAU;if(d<-Math.PI)d+=TAU;S.st.rot+=d;down.moved+=Math.abs(d);const n=performance.now();S.st.vel=d/Math.max(.008,(n-down.lt)/1000);down.lt=n;down.a=a});
+  const rad=()=>Math.min(planetC.clientWidth,planetC.clientHeight)*.31;
+  planetC.addEventListener('pointerdown',e=>{planetC.setPointerCapture(e.pointerId);down={x:e.clientX,t:performance.now(),moved:0,lt:performance.now()};S.st.drag=true;S.st.vel=0});
+  planetC.addEventListener('pointermove',e=>{if(!down)return;const d=(e.clientX-down.x)/rad();S.st.rot+=d;down.moved+=Math.abs(d);const n=performance.now();S.st.vel=d/Math.max(.008,(n-down.lt)/1000);down.lt=n;down.x=e.clientX});
   planetC.addEventListener('pointerup',()=>{if(!down)return;S.st.drag=false;S.st.vel=clamp(S.st.vel,-8,8);if(down.moved<.05&&performance.now()-down.t<350){S.st.night=!S.st.night;ping(S.st.night?0:4);log(S.st.night?'you turned the planet to night':'you brought the sun back','planet')}else log('you spun the planet','spin');down=null})}
 
 /* ---------- serene.aiart films ---------- */
