@@ -390,13 +390,13 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
 
   <main class="gridwrap" id="work" style="scroll-margin-top:100px">
     <div class="grid">
-      <article class="tile film" id="feature" data-i="0" tabindex="0" role="button" aria-label="Watch: There are versions of you still wandering abandoned dreams.">
+      <article class="tile film" id="feature" data-i="0" tabindex="0" role="button" aria-label="Watch: Maybe we only remember certain moments because they felt different.">
         <canvas class="full"></canvas><span class="fn">01</span>
       </article>
-      <article class="tile film" id="f2" data-i="1" tabindex="0" role="button" aria-label="Watch: The sky forgot where it ends.">
+      <article class="tile film" id="f2" data-i="1" tabindex="0" role="button" aria-label="Watch: Some places only make sense after you leave.">
         <canvas class="full"></canvas><span class="fn">02</span>
       </article>
-      <article class="tile film" id="f3" data-i="2" tabindex="0" role="button" aria-label="Watch: Reality has a habit of blinking. Don’t. Blink.">
+      <article class="tile film" id="f3" data-i="2" tabindex="0" role="button" aria-label="Watch: I don’t know why this feels familiar. I don’t think it should.">
         <canvas class="full"></canvas><span class="fn">03</span>
       </article>
       <article class="tile film" id="f4" data-i="3" tabindex="0" role="button" aria-label="Watch: You can wake up anytime you want. You just haven’t wanted to.">
@@ -575,9 +575,9 @@ const planet=scene(planetC,planetC,(c,w,h,t,dt,S)=>{const st=S.st;
 /* ---------- serene.aiart films ---------- */
 // Each piece: a video (or image) file next to index.html, its caption, the song credit ("Song · Artist"), and the Instagram post.
 const ART=[
-  {title:'There are versions of you still wandering abandoned dreams.',src:'art/01.mp4',link:'https://www.instagram.com/serene.aiart/reel/DbrjwmsM5Qv/',audio:'',g:['#f3e7d9','#c9b6e2','#6f86b8',.32,.25]},
-  {title:'The sky forgot where it ends.',src:'art/02.mp4',link:'https://www.instagram.com/serene.aiart/reel/DaUaCnjs3_P/',audio:'',g:['#fde6d6','#ee9f8c','#6e4f72',.7,.3]},
-  {title:'Reality has a habit of blinking. Don\'t. Blink.',src:'art/03.mp4',link:'https://www.instagram.com/serene.aiart/reel/DaR6aOkvdQ-/',audio:'',g:['#eef6ec','#9fc7b4','#45685f',.4,.72]},
+  {title:'Maybe we only remember certain moments because they felt different.',src:'art/05.mp4',link:'https://www.instagram.com/serene.aiart/reel/DduziPsMJ7m/',audio:'',g:['#f3e7d9','#c9b6e2','#6f86b8',.32,.25]},
+  {title:'Some places only make sense after you leave.',src:'art/06.mp4',link:'https://www.instagram.com/serene.aiart/reel/DdkmEDJshag/',audio:'',g:['#fde6d6','#ee9f8c','#6e4f72',.7,.3]},
+  {title:'I don’t know why this feels familiar. I don’t think it should.',src:'art/07.mp4',link:'https://www.instagram.com/serene.aiart/reel/Dc-6yuMPrRM/',audio:'',g:['#eef6ec','#9fc7b4','#45685f',.4,.72]},
   {title:'You can wake up anytime you want. You just haven’t wanted to.',src:'art/04.mp4',link:'https://www.instagram.com/serene.aiart/reel/DelOyzysV97/',audio:'',g:['#e8eefb','#b7c4ea','#5b6a9a',.5,.4]}];
 const isVid=a=>/\.(mp4|webm|mov)(\?|$)/i.test(a.src);
 const phCss=a=>`radial-gradient(120% 100% at ${a.g[3]*100}% ${a.g[4]*100}%,${a.g[0]} 0%,${a.g[1]} 45%,${a.g[2]} 100%)`;
@@ -638,7 +638,7 @@ addEventListener('keydown',e=>{if(lb.hidden)return;if(e.key==='Escape')closeLb()
 addEventListener('resize',()=>{if(!lb.hidden)lbLayout()});
 
 /* ---------- film tiles ---------- */
-const dur=i=>{const m=media[i];return m&&isFinite(m.duration)&&m.duration>0?m.duration:[18.1,14.1,15.2,15.2][i]||15};
+const dur=i=>{const m=media[i];return m&&isFinite(m.duration)&&m.duration>0?m.duration:[15.1,15.1,15.2,15.2][i]||15};
 const totalDur=()=>ART.reduce((t,_,i)=>t+dur(i),0);
 const mmss=t=>pad2(Math.floor(t/60))+':'+pad2(Math.floor(t%60));
 function seek(m,t){if(!m)return;if(m.seeking){m._pend=t;return}m.currentTime=t}
