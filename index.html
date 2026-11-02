@@ -57,10 +57,10 @@ a{color:inherit}
 @keyframes blinkw{0%,100%{opacity:1}40%{opacity:.12}52%{opacity:1}}
 .last button{color:var(--ink2);text-align:left;font:inherit}
 .last button:hover{color:var(--ink)}
-.socials{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
-.ig{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px 0 11px;border-radius:999px;background:var(--tile);color:var(--ink);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .2s}
-.ig svg{width:17px;height:17px}
-.ig span{color:var(--ink3);font-size:12px;transition:color .2s,transform .25s}
+.socials{margin-top:14px;display:flex;flex-wrap:nowrap;gap:6px}
+.ig{flex:none;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px 0 8px;border-radius:999px;background:var(--tile);color:var(--ink);text-decoration:none;font-size:12px;font-weight:500;transition:background .2s}
+.ig svg{width:14px;height:14px}
+.ig span{color:var(--ink3);font-size:10.5px;transition:color .2s,transform .25s}
 .ig:hover{background:var(--tile-h)}
 .ig:hover span{color:var(--ink);transform:translate(1px,-1px)}
 .w-worlds::after{content:"";position:absolute;left:50%;top:55%;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--accent);opacity:0;transition:opacity .3s}
@@ -219,8 +219,8 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .ed-card button.primary{background:var(--ink);color:var(--bg)}
 .ed-card .err{color:#c2373b;font-size:12.5px;min-height:1em}
 /* message me */
-.chat{position:absolute;left:16px;right:16px;top:14px;bottom:64px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;overflow:hidden}
-.bubble{max-width:80%;padding:8px 12px;border-radius:16px;font-size:13px;line-height:1.4;animation:bub .35s cubic-bezier(.3,1.4,.5,1)}
+.chat{position:absolute;left:18px;right:18px;top:16px;bottom:70px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;overflow:hidden;transition:top .46s cubic-bezier(.2,.9,.25,1),left .46s cubic-bezier(.2,.9,.25,1),right .46s cubic-bezier(.2,.9,.25,1),bottom .46s cubic-bezier(.2,.9,.25,1)}
+.bubble{flex:none;max-width:82%;padding:9px 14px;border-radius:18px;font-size:13px;line-height:1.45;animation:bub .35s cubic-bezier(.3,1.4,.5,1)}
 .bubble.in{align-self:flex-start;background:var(--paper);color:var(--ink);border-bottom-left-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
 .bubble.out{align-self:flex-end;background:var(--ink);color:var(--bg);border-bottom-right-radius:5px}
 .bubble.typing{display:flex;gap:4px;padding:11px 12px}
@@ -228,13 +228,31 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .bubble.typing i:nth-child(2){animation-delay:.15s}.bubble.typing i:nth-child(3){animation-delay:.3s}
 @keyframes bub{from{opacity:0;transform:translateY(6px) scale(.96)}}
 @keyframes dot{0%,60%,100%{opacity:.35;transform:none}30%{opacity:1;transform:translateY(-2px)}}
-.compose{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:6px;padding:4px 4px 4px 16px;border-radius:999px;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 20px -14px rgba(0,0,0,.25)}
+.compose{position:absolute;left:14px;right:14px;bottom:14px;transition:left .46s cubic-bezier(.2,.9,.25,1),right .46s cubic-bezier(.2,.9,.25,1),bottom .46s cubic-bezier(.2,.9,.25,1),box-shadow .2s;display:flex;align-items:center;gap:6px;padding:4px 4px 4px 16px;border-radius:999px;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 20px -14px rgba(0,0,0,.25)}
 .compose input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;color:var(--ink);-webkit-user-select:text;user-select:text}
 .compose input::placeholder{color:var(--ink3)}
 .send{width:36px;height:36px;flex:none;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;transition:transform .15s,opacity .2s}
 .send:active{transform:scale(.92)}
 .send svg{width:15px;height:15px}
 .compose:focus-within{box-shadow:0 0 0 1.5px var(--accent),0 8px 20px -14px rgba(0,0,0,.25)}
+
+/* message window: the tile grows into a centred window over a blurred page */
+#msg{cursor:pointer}
+.msg-ov{position:fixed;inset:0;z-index:300;background:rgba(251,251,250,0);transition:background .46s ease,backdrop-filter .46s ease,-webkit-backdrop-filter .46s ease}
+.msg-ov[hidden]{display:none}
+.msg-ov.open{background:rgba(251,251,250,.5);backdrop-filter:blur(18px) saturate(1.1);-webkit-backdrop-filter:blur(18px) saturate(1.1)}
+.msg-win{position:fixed;background:var(--tile);border-radius:var(--r);overflow:hidden;transition:left .46s cubic-bezier(.2,.9,.25,1),top .46s cubic-bezier(.2,.9,.25,1),width .46s cubic-bezier(.2,.9,.25,1),height .46s cubic-bezier(.2,.9,.25,1),border-radius .46s,box-shadow .46s}
+.msg-win.big{border-radius:24px;box-shadow:0 0 0 1px var(--line),0 40px 80px -40px rgba(0,0,0,.45)}
+.msg-head{position:absolute;left:0;right:0;top:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 22px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s}
+.msg-win.big .msg-head{opacity:1;transition:opacity .3s .16s}
+.msg-x{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--ink2);transition:background .2s,color .2s}
+.msg-x:hover{background:var(--tile-h);color:var(--ink)}
+.msg-x svg{width:16px;height:16px}
+.msg-win.big .chat{top:62px;left:24px;right:24px;bottom:86px;gap:12px;overflow-y:auto;justify-content:flex-start;scrollbar-width:none}
+.msg-win.big .chat::-webkit-scrollbar{display:none}
+.msg-win.big .chat>:first-child{margin-top:auto}
+.msg-win.big .bubble{font-size:14.5px;max-width:76%}
+.msg-win.big .compose{left:18px;right:18px;bottom:18px}
 
 /* small controls */
 .btn{position:absolute;z-index:5;height:28px;padding:0 12px;border-radius:999px;background:var(--paper);font-size:12.5px;font-weight:500;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
@@ -717,7 +735,7 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
 // (using that one keeps your email out of the page). Leave empty to turn sending off.
 const FORM_TO='lynondev@proton.me';
 const chat=$('#chat'),msgIn=$('#msgIn');
-function bubble(cls,text){const b=document.createElement('div');b.className='bubble '+cls;if(text)b.textContent=text;chat.appendChild(b);while(chat.children.length>4)chat.firstChild.remove();return b}
+function bubble(cls,text){const b=document.createElement('div');b.className='bubble '+cls;if(text)b.textContent=text;chat.appendChild(b);while(chat.children.length>40)chat.firstChild.remove();chat.scrollTop=chat.scrollHeight;return b}
 function typing(){const t=bubble('typing');t.innerHTML='<i></i><i></i><i></i>';return t}
 // two steps, like a chat: the message, then where to reply
 let draft=null,sending=false;
@@ -732,6 +750,28 @@ $('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)
   if(ok){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! It’s on its way to me.');log('you sent a message','sent');ping(7,.05)}
   else if(!FORM_TO){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! My inbox isn’t connected here yet, so this message wasn’t sent.')}
   else bubble('in','That didn’t go through. Check your connection and send your email again.')});
+
+// the tile opens into a window in the middle of the page and shrinks back into place on close
+const msgT=$('#msg'),compose=$('#compose'),msgOv=document.createElement('div'),msgWin=document.createElement('div');
+msgOv.className='msg-ov';msgOv.hidden=true;msgWin.className='msg-win';msgWin.setAttribute('role','dialog');msgWin.setAttribute('aria-modal','true');msgWin.setAttribute('aria-label','Message me');
+msgWin.innerHTML='<div class="msg-head"><span>Message me</span><button class="msg-x" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>';
+msgOv.appendChild(msgWin);document.body.appendChild(msgOv);
+let msgOpen=false,msgBusy=false;
+const boxOf=el=>{const r=el.getBoundingClientRect();return{left:r.left,top:r.top,width:r.width,height:r.height}};
+const centreBox=()=>{const w=Math.min(520,innerWidth-32),h=Math.min(540,innerHeight-48);return{left:(innerWidth-w)/2,top:(innerHeight-h)/2,width:w,height:h}};
+const setBox=b=>{for(const k in b)msgWin.style[k]=b[k]+'px'};
+function openMsg(){if(msgOpen||msgBusy||editing())return;msgOpen=msgBusy=true;const from=boxOf(msgT);
+  msgWin.append(chat,compose);msgOv.hidden=false;msgWin.style.transition='none';setBox(from);document.documentElement.style.overflow='hidden';
+  void msgWin.offsetWidth;msgWin.style.transition='';msgOv.classList.add('open');msgWin.classList.add('big');setBox(centreBox());
+  setTimeout(()=>{msgBusy=false;chat.scrollTop=chat.scrollHeight;msgIn.focus({preventScroll:true})},RM?0:480);ping(4,.05)}
+function closeMsg(){if(!msgOpen||msgBusy)return;msgBusy=true;document.documentElement.style.overflow='';msgOv.classList.remove('open');msgWin.classList.remove('big');setBox(boxOf(msgT));
+  setTimeout(()=>{msgT.append(chat,compose);msgOv.hidden=true;msgOpen=msgBusy=false;chat.scrollTop=chat.scrollHeight},RM?0:470)}
+msgT.addEventListener('click',()=>openMsg());
+msgIn.addEventListener('focus',()=>{if(!msgOpen)openMsg()});
+msgWin.querySelector('.msg-x').addEventListener('click',closeMsg);
+msgOv.addEventListener('click',e=>{if(e.target===msgOv)closeMsg()});
+addEventListener('keydown',e=>{if(msgOpen&&e.key==='Escape')closeMsg()});
+addEventListener('resize',()=>{if(msgOpen&&!msgBusy)setBox(centreBox())});
 
 /* ---------- word split, filters, theme ---------- */
 $$('[data-split]').forEach(el=>{el.innerHTML=[...el.textContent].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':ch}</span>`).join('')});
