@@ -358,7 +358,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
           <div class="dial" id="dial" role="slider" tabindex="0" aria-label="Page speed" aria-valuemin="0.25" aria-valuemax="2" aria-valuenow="1"><i></i></div></div>
         <div class="lab"><span class="mono">06</span>Pace</div><span class="paceval" id="paceVal">1.00×</span>
       </article>
-      <article class="tile" id="blink" tabindex="0" role="button" aria-pressed="false" aria-label="Lights out: an eyeball wandering around. Switches the page to dark mode.">
+      <article class="tile" id="blink" tabindex="0" role="button" aria-pressed="false" aria-label="An eyeball that follows your cursor. Switches the page between light and dark.">
         <canvas class="full"></canvas>
       </article>
       <article class="tile" id="pond" data-cat="worlds" tabindex="0" aria-label="Pond. Lead the fish with your pointer, click to drop a pebble.">
@@ -373,7 +373,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
       </article>
       <div class="cap" style="grid-area:np">Now playing<span id="npTc">00:00 / 00:00</span></div>
       <div class="cap" style="grid-area:pace">Pace<span id="paceVal2">1.00×</span></div>
-      <div class="cap" style="grid-area:blink" id="blinkCap">Lights out</div>
+      <div class="cap" style="grid-area:blink" id="blinkCap">Lights on</div>
       <div class="cap" style="grid-area:pond">Pond</div>
       <div class="cap" style="grid-area:msg">Message me</div>
     </div>
@@ -619,15 +619,18 @@ function scrubAt(x){let i=segs.length-1;for(let k=0;k<segs.length;k++){const d=s
 tap($('#npOpen'),()=>openLb(reelI,$('#npOpen')));
 npSnd.addEventListener('click',()=>{if(editing())return;if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}listenOn=!listenOn;applyListen();if(listenOn){const m=media[reelI];m&&m.play().catch(()=>{})}log(listenOn?'you turned the film sound on':'you muted the films','listen')});
 
-// lights out: an eyeball that wanders the tile; clicking it switches the page between light and dark
+// lights on/out: an eyeball that follows the cursor around its tile; clicking it switches the page between light and dark
 let GX=-1e4,GY=-1e4;addEventListener('pointermove',e=>{GX=e.clientX;GY=e.clientY},{passive:true});
 const eye=scene($('#blink'),$('#blink canvas'),(c,w,h,t,dt,S)=>{const st=S.st,pk=clamp((T-st.pop)/.45,0,1),r=Math.max(6,Math.min(w,h)*.2)*(1+.16*Math.sin(pk*Math.PI)*(1-pk));
-  // wander: ease toward a spot that changes every couple of seconds
+  // follow the cursor (kept inside the tile); before anyone moves a pointer, drift between random spots
   if(w<40||h<40)return;
-  if(!st.init||T>st.next||st.tx>w-r||st.ty>h-r){const m=r+4;st.tx=m+Math.random()*Math.max(1,w-2*m);st.ty=m+Math.random()*Math.max(1,h-2*m);st.next=T+1.4+Math.random()*2.6;if(!st.init){st.x=st.tx;st.y=st.ty;st.init=1}}
-  const k=Math.min(dt,.05);st.vx+=((st.tx-st.x)*4-st.vx*2.6)*k;st.vy+=((st.ty-st.y)*4-st.vy*2.6)*k;st.x=clamp(st.x+st.vx*k,r,w-r);st.y=clamp(st.y+st.vy*k,r,h-r);
+  const R=S.c.getBoundingClientRect(),m=r+4,seen=GX>-1e3;
+  if(!st.init){st.x=w/2;st.y=h/2;st.tx=st.x;st.ty=st.y;st.init=1}
+  if(seen){st.tx=clamp(GX-R.left,m,w-m);st.ty=clamp(GY-R.top,m,h-m)}
+  else if(T>st.next){st.tx=m+Math.random()*Math.max(1,w-2*m);st.ty=m+Math.random()*Math.max(1,h-2*m);st.next=T+1.4+Math.random()*2.6}
+  const k=Math.min(dt,.05);st.vx+=((st.tx-st.x)*14-st.vx*6)*k;st.vy+=((st.ty-st.y)*14-st.vy*6)*k;st.x=clamp(st.x+st.vx*k,r,w-r);st.y=clamp(st.y+st.vy*k,r,h-r);
   // gaze: at the pointer when it's close, otherwise where it's heading
-  const R=S.c.getBoundingClientRect();let gx=GX-(R.left+st.x),gy=GY-(R.top+st.y),near=Math.hypot(gx,gy)<380;if(!near){gx=st.vx;gy=st.vy}
+  let gx=GX-(R.left+st.x),gy=GY-(R.top+st.y),near=Math.hypot(gx,gy)<380;if(!near){gx=st.vx;gy=st.vy}
   const gd=Math.hypot(gx,gy)||1,gm=Math.min(1,gd/(near?150:70)),ek=Math.min(1,dt*6+.02);st.gx=lerp(st.gx,gx/gd*gm,ek);st.gy=lerp(st.gy,gy/gd*gm,ek);
   st.dil=lerp(st.dil,C.dark?1:0,Math.min(1,dt*3+.02));
   const gmag=Math.hypot(st.gx,st.gy),ga=Math.atan2(st.gy,st.gx),ix=st.x+st.gx*r*.52,iy=st.y+st.gy*r*.52,ir=r*.46,sq=1-gmag*.34,pr=ir*(.36+st.dil*.24);
@@ -638,7 +641,7 @@ const eye=scene($('#blink'),$('#blink canvas'),(c,w,h,t,dt,S)=>{const st=S.st,pk
   c.beginPath();c.arc(st.x,st.y,r,0,TAU);c.strokeStyle=C.ink;c.globalAlpha=.35;c.lineWidth=1;c.stroke();c.globalAlpha=1;
 },{init:0,next:0,x:0,y:0,tx:0,ty:0,vx:0,vy:0,gx:0,gy:0,dil:0,pop:-9});
 function setTheme(dark,quiet){const h=document.documentElement;if(!quiet){h.classList.add('theming');clearTimeout(setTheme._t);setTheme._t=setTimeout(()=>h.classList.remove('theming'),650)}
-  h.dataset.theme=dark?'dark':'light';readC();store.set('lyn-theme',dark?'dark':'light');$('#blinkCap').textContent=dark?'Lights on':'Lights out';$('#blink').setAttribute('aria-pressed',String(dark));
+  h.dataset.theme=dark?'dark':'light';readC();store.set('lyn-theme',dark?'dark':'light');$('#blinkCap').textContent=dark?'Lights out':'Lights on';$('#blink').setAttribute('aria-pressed',String(dark));
   if(!quiet){ping(dark?0:4,.06);log(dark?'you turned the lights out':'you turned the lights back on','theme')}}
 setTheme(store.get('lyn-theme','light')==='dark',true);
 tap($('#blink'),()=>{eye.st.pop=T;setTheme(!isDark())});
