@@ -11,8 +11,14 @@
   --bg:#fbfbfa; --tile:#f2f2f0; --tile-h:#ececea; --ink:#171717; --ink2:#737373; --ink3:#b3b3b0; --line:rgba(0,0,0,.08);
   --accent:#2b45f5; --dither:#1c1c1c; --paper:#ffffff;
   --f-body:"Public Sans",ui-sans-serif,system-ui,sans-serif; --f-mono:"Geist Mono",ui-monospace,monospace;
-  --gap:20px; --r:18px; --pace:1;
+  --gap:20px; --r:18px; --pace:1; --scrim:rgba(251,251,250,.5);
 }
+/* dark: turned on by the eyeball tile, remembered per visitor */
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0e0e0f; --tile:#1a1a1c; --tile-h:#212124; --ink:#ededeb; --ink2:#a8a8a5; --ink3:#7a7a7d; --line:rgba(255,255,255,.09);
+  --accent:#7389ff; --dither:#e6e6e3; --paper:#2b2b2f; --scrim:rgba(14,14,15,.6);
+}
+html.theming,html.theming *{transition:background-color .5s ease,color .5s ease,box-shadow .5s ease,border-color .5s ease!important}
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-weight:400;font-size:15px;line-height:1.65;padding-inline:24px;padding-block:0;-webkit-font-smoothing:antialiased}
@@ -112,9 +118,6 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .film.playing .fn::before{width:6px;margin-right:5px}
 .vids{position:fixed;left:0;top:0;width:2px;height:2px;overflow:hidden;opacity:0;pointer-events:none}
 #blink{cursor:pointer}
-.tile::after{content:"";position:absolute;inset:0;z-index:20;background:#111;opacity:0;pointer-events:none}
-.tile.blinked::after{animation:lid .34s ease-in-out}
-@keyframes lid{0%{opacity:0}35%,45%{opacity:1}100%{opacity:0}}
 /* now playing: caption, sound and a scrubber for the films above */
 .np{position:absolute;inset:0;padding:14px 18px;display:flex;flex-direction:column;gap:6px}
 .np-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -157,7 +160,7 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .cap a:hover{color:var(--ink)}
 /* in-page viewer: page blurs behind the piece */
 .lb{position:fixed;inset:0;z-index:300;display:grid;grid-template-columns:56px minmax(0,1fr) 56px;align-items:center;padding:24px 12px calc(24px + env(safe-area-inset-bottom,0px));
-  background:rgba(251,251,250,.5);backdrop-filter:blur(20px) saturate(1.1);-webkit-backdrop-filter:blur(20px) saturate(1.1);opacity:0;transition:opacity .28s ease}
+  background:var(--scrim);backdrop-filter:blur(20px) saturate(1.1);-webkit-backdrop-filter:blur(20px) saturate(1.1);opacity:0;transition:opacity .28s ease}
 .lb[hidden]{display:none}
 .lb.open{opacity:1}
 .lb figure{margin:0;justify-self:center;display:flex;flex-direction:column;align-items:center;gap:12px;max-width:min(86vw,920px);transform:scale(.96) translateY(8px);transition:transform .4s cubic-bezier(.3,1.3,.5,1)}
@@ -208,7 +211,7 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .ed-bar button.primary[disabled]{opacity:.35;pointer-events:none}
 .ed-msg{position:fixed;left:50%;bottom:calc(70px + env(safe-area-inset-bottom,0px));translate:-50% 0;z-index:400;font-size:12.5px;color:var(--ink2);background:var(--paper);padding:8px 14px;border-radius:14px;box-shadow:0 0 0 1px var(--line),0 10px 24px -14px rgba(0,0,0,.3);opacity:0;transition:opacity .25s;pointer-events:none;width:max-content;max-width:min(560px,90vw);text-align:center;line-height:1.45}
 .ed-msg.on{opacity:1}
-.ed-modal{position:fixed;inset:0;z-index:450;display:grid;place-items:center;background:rgba(251,251,250,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:16px}
+.ed-modal{position:fixed;inset:0;z-index:450;display:grid;place-items:center;background:var(--scrim);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:16px}
 .ed-card{width:min(420px,100%);background:var(--paper);border-radius:18px;padding:20px;box-shadow:0 0 0 1px var(--line),0 30px 60px -30px rgba(0,0,0,.4);display:grid;gap:12px}
 .ed-card h2{margin:0;font-size:16px;font-weight:600}
 .ed-card p{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.55}
@@ -239,9 +242,9 @@ a.tile{display:block;text-decoration:none;color:inherit}
 
 /* message window: the tile grows into a centred window over a blurred page */
 #msg{cursor:pointer}
-.msg-ov{position:fixed;inset:0;z-index:300;background:rgba(251,251,250,0);transition:background .46s ease,backdrop-filter .46s ease,-webkit-backdrop-filter .46s ease}
+.msg-ov{position:fixed;inset:0;z-index:300;background:transparent;transition:background .46s ease,backdrop-filter .46s ease,-webkit-backdrop-filter .46s ease}
 .msg-ov[hidden]{display:none}
-.msg-ov.open{background:rgba(251,251,250,.5);backdrop-filter:blur(18px) saturate(1.1);-webkit-backdrop-filter:blur(18px) saturate(1.1)}
+.msg-ov.open{background:var(--scrim);backdrop-filter:blur(18px) saturate(1.1);-webkit-backdrop-filter:blur(18px) saturate(1.1)}
 .msg-win{position:fixed;background:var(--tile);border-radius:var(--r);overflow:hidden;transition:left .46s cubic-bezier(.2,.9,.25,1),top .46s cubic-bezier(.2,.9,.25,1),width .46s cubic-bezier(.2,.9,.25,1),height .46s cubic-bezier(.2,.9,.25,1),border-radius .46s,box-shadow .46s}
 .msg-win.big{border-radius:24px;box-shadow:0 0 0 1px var(--line),0 40px 80px -40px rgba(0,0,0,.45)}
 .msg-head{position:absolute;left:0;right:0;top:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 22px;font-size:14px;font-weight:600;opacity:0;transition:opacity .2s}
@@ -355,7 +358,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
           <div class="dial" id="dial" role="slider" tabindex="0" aria-label="Page speed" aria-valuemin="0.25" aria-valuemax="2" aria-valuenow="1"><i></i></div></div>
         <div class="lab"><span class="mono">06</span>Pace</div><span class="paceval" id="paceVal">1.00×</span>
       </article>
-      <article class="tile" id="blink" tabindex="0" role="button" aria-label="An eye that follows you. Blink it.">
+      <article class="tile" id="blink" tabindex="0" role="button" aria-pressed="false" aria-label="Lights out: an eyeball wandering around. Switches the page to dark mode.">
         <canvas class="full"></canvas>
       </article>
       <article class="tile" id="pond" data-cat="worlds" tabindex="0" aria-label="Pond. Lead the fish with your pointer, click to drop a pebble.">
@@ -370,7 +373,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
       </article>
       <div class="cap" style="grid-area:np">Now playing<span id="npTc">00:00 / 00:00</span></div>
       <div class="cap" style="grid-area:pace">Pace<span id="paceVal2">1.00×</span></div>
-      <div class="cap" style="grid-area:blink">Don’t blink</div>
+      <div class="cap" style="grid-area:blink" id="blinkCap">Lights out</div>
       <div class="cap" style="grid-area:pond">Pond</div>
       <div class="cap" style="grid-area:msg">Message me</div>
     </div>
@@ -411,7 +414,7 @@ const TAU=Math.PI*2,RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const lerp=(a,b,k)=>a+(b-a)*k,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch{return d}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
-const isDark=()=>false,editing=()=>!!document.querySelector('.grid.editing');
+const isDark=()=>document.documentElement.dataset.theme==='dark',editing=()=>!!document.querySelector('.grid.editing');
 let C={};
 function readC(){const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue(n).trim();C={ink:g('--ink'),ink2:g('--ink2'),ink3:g('--ink3'),accent:g('--accent'),dither:g('--dither'),paper:g('--paper'),tile:g('--tile'),dark:isDark()}}
 function hex(h){h=h.replace('#','');if(h.length===3)h=[...h].map(x=>x+x).join('');const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255]}
@@ -486,16 +489,17 @@ const local=(S,e)=>{if(!e)return[S.w/2,S.h/2];const r=S.c.getBoundingClientRect(
 const planetC=$('#planet');
 const OBJS=[[0,'house'],[.9,'tree'],[1.5,'tree'],[2.6,'rock'],[3.5,'tree'],[4.4,'tree'],[5.4,'rock']];
 function onRim(o,cx,cy,R,a,fn){o.save();o.translate(cx,cy);o.rotate(a);o.translate(0,-R+1);fn();o.restore()}
+const inv=v=>C.dark?1-v:v,GI=v=>G(inv(v));
 const planet=scene(planetC,planetC,(c,w,h,t,dt,S)=>{const st=S.st;
   if(!st.drag){st.rot+=(st.vel+.2)*dt;st.vel*=Math.pow(.15,dt)}
   st.nk=lerp(st.nk,st.night?1:0,Math.min(1,dt*3+.02));const nk=st.nk;
   const cx=w/2,cy=h*.47,R=Math.min(w,h)*.29;
   dither(S,2,o=>{ell(o,cx,cy+R*1.48,R*.75,R*.1,G(.18));
     for(const[a,k]of OBJS)onRim(o,cx,cy,R,st.rot+a,()=>{
-      if(k==='house'){o.fillStyle=G(lerp(.25,.6,nk));o.fillRect(-8,-13,16,14);o.beginPath();o.moveTo(-11,-12);o.lineTo(0,-23);o.lineTo(11,-12);o.closePath();o.fillStyle=G(.85);o.fill()}
-      if(k==='tree'){o.fillStyle=G(.9);o.fillRect(-1,-9,2,10);gsphere(o,0,-15,6.5,.35,1)}
-      if(k==='rock')gsphere(o,0,-2,4.5,.2,.8)});
-    gsphere(o,cx,cy,R,lerp(.06,.55,nk),lerp(.82,1,nk));
+      if(k==='house'){o.fillStyle=GI(lerp(.25,.6,nk));o.fillRect(-8,-13,16,14);o.beginPath();o.moveTo(-11,-12);o.lineTo(0,-23);o.lineTo(11,-12);o.closePath();o.fillStyle=GI(.85);o.fill()}
+      if(k==='tree'){o.fillStyle=GI(.9);o.fillRect(-1,-9,2,10);gsphere(o,0,-15,6.5,inv(.35),inv(1))}
+      if(k==='rock')gsphere(o,0,-2,4.5,inv(.2),inv(.8))});
+    gsphere(o,cx,cy,R,inv(lerp(.06,.55,nk)),inv(lerp(.82,1,nk)));
     });
   const sa=-st.rot*.35-1.2,sx=cx+Math.cos(sa)*R*1.4,sy=cy+Math.sin(sa)*R*1.4;
   c.globalAlpha=1-nk;c.beginPath();c.arc(sx,sy,R*.12,0,TAU);c.fillStyle=C.accent;c.fill();
@@ -553,8 +557,8 @@ const ready=m=>m&&(m.tagName==='VIDEO'?m.readyState>=2:(m.complete&&m.naturalWid
 function paintSrc(c,i,w,h){const a=ART[i],m=media[i];
   if(ready(m)){const mw=m.videoWidth||m.naturalWidth,mh=m.videoHeight||m.naturalHeight,k=Math.max(w/mw,h/mh),dw=mw*k,dh=mh*k;c.drawImage(m,(w-dw)/2,(h-dh)/2,dw,dh);return}
   const g=c.createRadialGradient(w*a.g[3],h*a.g[4],0,w*a.g[3],h*a.g[4],Math.hypot(w,h)*.9);g.addColorStop(0,a.g[0]);g.addColorStop(.45,a.g[1]);g.addColorStop(1,a.g[2]);c.fillStyle=g;c.fillRect(0,0,w,h)}
-function ditherImg(im){const d=im.data,w=im.width,h=im.height,ink=hex(C.dither),pp=hex(C.paper);
-  for(let y=0,p=0;y<h;y++){const row=(y&7)<<3;for(let x=0;x<w;x++,p+=4){const L=(.299*d[p]+.587*d[p+1]+.114*d[p+2])/255;const k=clamp((1-L)*1.05-.1,0,1);const q=k>BAYER[row|(x&7)]?ink:pp;d[p]=q[0];d[p+1]=q[1];d[p+2]=q[2];d[p+3]=255}}}
+function ditherImg(im){const d=im.data,w=im.width,h=im.height,ink=hex(C.dither),pp=hex(C.paper),dk=C.dark;
+  for(let y=0,p=0;y<h;y++){const row=(y&7)<<3;for(let x=0;x<w;x++,p+=4){const L=(.299*d[p]+.587*d[p+1]+.114*d[p+2])/255;const k=clamp((dk?L:1-L)*1.05-.1,0,1);const q=k>BAYER[row|(x&7)]?ink:pp;d[p]=q[0];d[p+1]=q[1];d[p+2]=q[2];d[p+3]=255}}}
 const credit=a=>a.audio?'♪ '+a.audio:'';
 function artEl(a){if(a.src&&isVid(a)){const v=mkVideo(a.src,true);v.className='col';v.autoplay=true;return v}if(a.src){const im=new Image();im.src=a.src;im.alt=a.title;im.decoding='async';im.className='col';return im}const d=document.createElement('div');d.className='ph col';d.style.setProperty('--ph',phCss(a));return d}
 let reelI=0,reelDrag=false,reelLastT=0,listenOn=false;
@@ -615,23 +619,29 @@ function scrubAt(x){let i=segs.length-1;for(let k=0;k<segs.length;k++){const d=s
 tap($('#npOpen'),()=>openLb(reelI,$('#npOpen')));
 npSnd.addEventListener('click',()=>{if(editing())return;if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}listenOn=!listenOn;applyListen();if(listenOn){const m=media[reelI];m&&m.play().catch(()=>{})}log(listenOn?'you turned the film sound on':'you muted the films','listen')});
 
-// don't blink: an eye that follows the pointer; blinking it jumps every film somewhere else
+// lights out: an eyeball that wanders the tile; clicking it switches the page between light and dark
 let GX=-1e4,GY=-1e4;addEventListener('pointermove',e=>{GX=e.clientX;GY=e.clientY},{passive:true});
-const eye=scene($('#blink'),$('#blink canvas'),(c,w,h,t,dt,S)=>{const st=S.st;
-  if(st.b0<0&&T>st.next)st.b0=T;let b=0;if(st.b0>=0){const k=(T-st.b0)/.3;if(k>=1){st.b0=-1;st.next=T+2.5+Math.random()*4}else b=Math.sin(k*Math.PI)}
-  const cx=w/2,cy=h*.5,ew=Math.min(w*.36,h*.5),eh=ew*.5*(1-b*.94);
-  const r=S.c.getBoundingClientRect();let dx=GX-(r.left+cx),dy=GY-(r.top+cy);const dd=Math.hypot(dx,dy)||1,m=Math.min(1,dd/240);dx=dx/dd*m;dy=dy/dd*m;
-  st.px=lerp(st.px,dx,Math.min(1,dt*8+.02));st.py=lerp(st.py,dy,Math.min(1,dt*8+.02));
-  const ir=ew*.42,ix=cx+st.px*ew*.45,iy=cy+st.py*ew*.18;
-  const almond=o=>{o.beginPath();o.moveTo(cx-ew,cy);o.quadraticCurveTo(cx,cy-eh*2,cx+ew,cy);o.quadraticCurveTo(cx,cy+eh*2,cx-ew,cy);o.closePath()};
-  dither(S,1,o=>{o.save();almond(o);o.clip();o.fillStyle=G(.05);o.fillRect(0,0,w,h);gsphere(o,ix,iy,ir,.3,.95);o.beginPath();o.arc(ix,iy,ir*.42,0,TAU);o.fillStyle=G(1);o.fill();o.restore()});
-  c.lineWidth=1.2;c.strokeStyle=C.ink;c.lineCap='round';almond(c);c.stroke();
-  for(let i=0;i<5;i++){const u=.2+i*.15,bx=(1-u)*(1-u)*(cx-ew)+2*u*(1-u)*cx+u*u*(cx+ew),by=(1-u)*(1-u)*cy+2*u*(1-u)*(cy-eh*2)+u*u*cy,a=-Math.PI/2+(u-.5)*1.3;
-    c.beginPath();c.moveTo(bx,by);c.lineTo(bx+Math.cos(a)*6,by+Math.sin(a)*6);c.stroke()}
-  if(b<.6){c.save();almond(c);c.clip();c.fillStyle='#fff';c.beginPath();c.arc(ix-ir*.32,iy-ir*.34,ir*.14,0,TAU);c.fill();c.fillStyle=C.accent;c.beginPath();c.arc(ix+ir*.3,iy+ir*.3,ir*.07,0,TAU);c.fill();c.restore()}
-},{next:2,b0:-1,px:0,py:0});
-tap($('#blink'),()=>{eye.st.b0=T;['feature','f2','f3','np'].forEach(id=>{const e=document.getElementById(id);e.classList.remove('blinked');void e.offsetWidth;e.classList.add('blinked')});
-  setTimeout(()=>media.forEach((m,i)=>{if(!m||m.tagName!=='VIDEO')return;const t=Math.random()*dur(i)*.9;seek(m,t);if(i===reelI)reelLastT=t}),RM?0:110);ping(0,.06);log('you blinked. reality moved','blink')});
+const eye=scene($('#blink'),$('#blink canvas'),(c,w,h,t,dt,S)=>{const st=S.st,pk=clamp((T-st.pop)/.45,0,1),r=Math.max(6,Math.min(w,h)*.2)*(1+.16*Math.sin(pk*Math.PI)*(1-pk));
+  // wander: ease toward a spot that changes every couple of seconds
+  if(w<40||h<40)return;
+  if(!st.init||T>st.next||st.tx>w-r||st.ty>h-r){const m=r+4;st.tx=m+Math.random()*Math.max(1,w-2*m);st.ty=m+Math.random()*Math.max(1,h-2*m);st.next=T+1.4+Math.random()*2.6;if(!st.init){st.x=st.tx;st.y=st.ty;st.init=1}}
+  const k=Math.min(dt,.05);st.vx+=((st.tx-st.x)*4-st.vx*2.6)*k;st.vy+=((st.ty-st.y)*4-st.vy*2.6)*k;st.x=clamp(st.x+st.vx*k,r,w-r);st.y=clamp(st.y+st.vy*k,r,h-r);
+  // gaze: at the pointer when it's close, otherwise where it's heading
+  const R=S.c.getBoundingClientRect();let gx=GX-(R.left+st.x),gy=GY-(R.top+st.y),near=Math.hypot(gx,gy)<380;if(!near){gx=st.vx;gy=st.vy}
+  const gd=Math.hypot(gx,gy)||1,gm=Math.min(1,gd/(near?150:70)),ek=Math.min(1,dt*6+.02);st.gx=lerp(st.gx,gx/gd*gm,ek);st.gy=lerp(st.gy,gy/gd*gm,ek);
+  st.dil=lerp(st.dil,C.dark?1:0,Math.min(1,dt*3+.02));
+  const gmag=Math.hypot(st.gx,st.gy),ga=Math.atan2(st.gy,st.gx),ix=st.x+st.gx*r*.52,iy=st.y+st.gy*r*.52,ir=r*.46,sq=1-gmag*.34,pr=ir*(.36+st.dil*.24);
+  const disc=(o,rad)=>{o.beginPath();o.ellipse(ix,iy,Math.max(.1,rad*sq),Math.max(.1,rad),ga,0,TAU)};
+  dither(S,1,o=>{gsphere(o,st.x,st.y,r,inv(.02),inv(.52));o.save();o.beginPath();o.arc(st.x,st.y,r,0,TAU);o.clip();disc(o,ir);o.fillStyle=GI(.6);o.fill();disc(o,pr);o.fillStyle=GI(1);o.fill();o.restore()});
+  c.save();c.beginPath();c.arc(st.x,st.y,r,0,TAU);c.clip();disc(c,ir);c.strokeStyle=C.accent;c.lineWidth=1.4;c.stroke();
+  c.fillStyle='#fff';c.beginPath();c.arc(ix-ir*.3,iy-ir*.36,ir*.15,0,TAU);c.fill();c.restore();
+  c.beginPath();c.arc(st.x,st.y,r,0,TAU);c.strokeStyle=C.ink;c.globalAlpha=.35;c.lineWidth=1;c.stroke();c.globalAlpha=1;
+},{init:0,next:0,x:0,y:0,tx:0,ty:0,vx:0,vy:0,gx:0,gy:0,dil:0,pop:-9});
+function setTheme(dark,quiet){const h=document.documentElement;if(!quiet){h.classList.add('theming');clearTimeout(setTheme._t);setTheme._t=setTimeout(()=>h.classList.remove('theming'),650)}
+  h.dataset.theme=dark?'dark':'light';readC();store.set('lyn-theme',dark?'dark':'light');$('#blinkCap').textContent=dark?'Lights on':'Lights out';$('#blink').setAttribute('aria-pressed',String(dark));
+  if(!quiet){ping(dark?0:4,.06);log(dark?'you turned the lights out':'you turned the lights back on','theme')}}
+setTheme(store.get('lyn-theme','light')==='dark',true);
+tap($('#blink'),()=>{eye.st.pop=T;setTheme(!isDark())});
 
 // one quiet loop for every film tile (~15 fps is plenty for the dither)
 applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.addEventListener('canplay',syncPlay,{once:true}));

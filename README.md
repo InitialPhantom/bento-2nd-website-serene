@@ -15,7 +15,7 @@ python -m http.server 8000
 - **Profile**: a spinnable planet avatar (drag to spin, tap for night) and a short intro.
 - **Films**: each piece has exactly one tile, dithered until you hover, opening in a blurred in-page viewer. The films play one after another; a blue dot marks the one that's on.
 - **Now playing**: types out the current film's caption and song credit, has a sound toggle for that film, and a scrubber across all films.
-- **Don't blink**: an eye that follows the pointer. Blink it and every film jumps somewhere else.
+- **Lights out**: a dithered eyeball that wanders around its tile and watches the pointer. Click it to switch the whole page to dark mode and back; the choice is remembered in that browser.
 - **Pace dial**: speeds up or slows down every animation and the films themselves.
 - Also Pond and Message me (a small chat box).
 - **Sound**: soft chimes made with the Web Audio API, plus the films' own audio. Both can be muted from the footer.
