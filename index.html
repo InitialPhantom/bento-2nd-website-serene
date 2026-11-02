@@ -254,6 +254,7 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .wp-dl{height:32px;padding:0 14px;border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:color .2s}
 .wp-dl:hover{color:var(--accent)}
 .wp-dl svg{width:13px;height:13px}
+.wp-note{grid-column:1 / -1;justify-self:end;margin:6px 8px 0;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)}
 .wp-btn{position:absolute;top:calc(50% + 8px);z-index:3;width:42px;height:42px;margin-top:-21px;border-radius:50%;background:var(--paper);color:var(--ink);display:grid;place-items:center;
   box-shadow:0 1px 2px rgba(0,0,0,.1),0 10px 22px -10px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s,transform .15s}
 .wp-btn svg{width:17px;height:17px}
@@ -772,7 +773,8 @@ const fileImgs=WALLS.map((p,i)=>{const b=mk('button','wp-file');b.type='button';
 // viewer: every wallpaper in a row that glides on a spring
 const wpItems=WALLS.map((p,i)=>{const f=mk('figure','wp-item'),im=mk('img');im.src=p.src;im.alt='serene.aiart wallpaper '+(i+1);im.loading='lazy';im.decoding='async';im.draggable=false;
   const a=mk('a','wp-dl',DL_SVG+'Download');a.href='art/wallpapers/jpg/'+p.n+'.jpg';a.download='serene wallpaper '+(i+1)+'.jpg';f.append(im,a);wpTrack.appendChild(f);return f});
-wpView.appendChild(wpTrack);wpWin.append(wpFiles,wpView,wpPrev,wpNext);
+const wpNote=mk('p','wp-note');wpNote.textContent='© serene.ai';
+wpView.appendChild(wpTrack);wpFiles.appendChild(wpNote);wpWin.append(wpFiles,wpView,wpPrev,wpNext);
 const blurN=document.getElementById('wpblurN');
 let wpPos=0,wpTgt=0,wpVel=0,wpIW=300,wpGap=20,wpRun=false,wpLast=0,wpDrag=null;
 const wpStep=()=>wpIW+wpGap;
