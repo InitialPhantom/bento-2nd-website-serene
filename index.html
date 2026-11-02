@@ -222,6 +222,7 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .chat{position:absolute;left:18px;right:18px;top:16px;bottom:70px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;overflow:hidden;transition:top .46s cubic-bezier(.2,.9,.25,1),left .46s cubic-bezier(.2,.9,.25,1),right .46s cubic-bezier(.2,.9,.25,1),bottom .46s cubic-bezier(.2,.9,.25,1)}
 .bubble{flex:none;max-width:82%;padding:9px 14px;border-radius:18px;font-size:13px;line-height:1.45;animation:bub .35s cubic-bezier(.3,1.4,.5,1)}
 .bubble.in{align-self:flex-start;background:var(--paper);color:var(--ink);border-bottom-left-radius:5px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.bubble a{color:var(--accent);text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
 .bubble.out{align-self:flex-end;background:var(--ink);color:var(--bg);border-bottom-right-radius:5px}
 .bubble.typing{display:flex;gap:4px;padding:11px 12px}
 .bubble.typing i{width:5px;height:5px;border-radius:50%;background:var(--ink3);animation:dot 1s infinite}
@@ -741,7 +742,10 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
 // Your email, or the random address FormSubmit gives you after you confirm the first message
 // (using that one keeps your email out of the page). Leave empty to turn sending off.
 const FORM_TO='lynondev@proton.me';
+// shown to visitors who'd rather write from their own email
+const MY_EMAIL='lynondev@proton.me';
 const chat=$('#chat'),msgIn=$('#msgIn');
+function emailBubble(lead){const b=bubble('in',lead+' ');const a=document.createElement('a');a.href='mailto:'+MY_EMAIL;a.textContent=MY_EMAIL;b.append(a,'.');return b}
 function bubble(cls,text){const b=document.createElement('div');b.className='bubble '+cls;if(text)b.textContent=text;chat.appendChild(b);while(chat.children.length>40)chat.firstChild.remove();chat.scrollTop=chat.scrollHeight;return b}
 function typing(){const t=bubble('typing');t.innerHTML='<i></i><i></i><i></i>';return t}
 // two steps, like a chat: the message, then where to reply
@@ -754,9 +758,9 @@ $('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)
   if(FORM_TO){try{const r=await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(FORM_TO),{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
       body:JSON.stringify({message:body,email:reply,_subject:'New message from your site',_template:'box',_captcha:'false'})});const j=await r.json().catch(()=>({}));ok=r.ok&&String(j.success)==='true'}catch{}}
   t.remove();sending=false;
-  if(ok){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! It’s on its way to me.');log('you sent a message','sent');ping(7,.05)}
+  if(ok){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! It’s on its way to me.');setTimeout(()=>emailBubble('If you’d rather, you can also email me at'),500);log('you sent a message','sent');ping(7,.05)}
   else if(!FORM_TO){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! My inbox isn’t connected here yet, so this message wasn’t sent.')}
-  else bubble('in','That didn’t go through. Check your connection and send your email again.')});
+  else emailBubble('That didn’t go through. Send your email again, or write to me at')});
 
 // the tile opens into a window in the middle of the page and shrinks back into place on close
 const msgT=$('#msg'),compose=$('#compose'),msgOv=document.createElement('div'),msgWin=document.createElement('div');
