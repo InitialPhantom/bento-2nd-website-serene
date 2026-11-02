@@ -119,6 +119,13 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .vids{position:fixed;left:0;top:0;width:2px;height:2px;overflow:hidden;opacity:0;pointer-events:none}
 #blink{cursor:pointer}
 /* now playing: caption, sound and a scrubber for the films above */
+.np-mini{display:none;position:absolute;inset:0;place-items:center}
+.np-mini svg{grid-area:1/1;width:64%;aspect-ratio:1;transform:rotate(-90deg)}
+.np-mini circle{fill:none;stroke-width:3}
+.np-mini .trk{stroke:var(--line)}
+.np-mini .prog{stroke:var(--ink);stroke-linecap:round;stroke-dasharray:125.66;stroke-dashoffset:125.66;transition:stroke .3s}
+.np-mini[aria-pressed="true"] .prog{stroke:var(--accent)}
+.np-mini b{grid-area:1/1;font-family:var(--f-mono);font-size:12px;font-weight:500;color:var(--ink)}
 .np{position:absolute;inset:0;padding:14px 18px;display:flex;flex-direction:column;gap:6px}
 .np-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .np-top .mono{color:var(--ink3)}
@@ -342,11 +349,13 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   :root{--gap:10px;--r:16px}
   /* phones: the three films side by side as portrait cards, everything else in short full-width rows */
   .grid{grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:auto;
-    grid-template-rows:calc((100cqi - 3 * var(--gap)) / 4 * 1.62 + var(--gap)) calc(156px + var(--capH)) calc(124px + var(--capH)) calc(150px + var(--capH)) calc(140px + var(--capH));
-    grid-template-areas:"feature feature feature f2 f2 f2 f3 f3 f3 f4 f4 f4" "np np np np np np np np np np np np" "pace pace pace pace pace pace blink blink blink blink blink blink" "walls walls walls walls walls walls walls walls walls walls walls walls" "msg msg msg msg msg msg msg msg msg msg msg msg"}
+    grid-template-rows:calc((100cqi - 3 * var(--gap)) / 4 * 1.62 + var(--gap)) calc((100cqi - 3 * var(--gap)) / 4 + var(--capH)) calc(140px + var(--capH));
+    grid-template-areas:"feature feature feature f2 f2 f2 f3 f3 f3 f4 f4 f4" "np np np pace pace pace blink blink blink walls walls walls" "msg msg msg msg msg msg msg msg msg msg msg msg"}
   .grid .film{height:calc(100% - var(--gap))}
   .film .fn{left:8px;bottom:8px}
-  .np{padding:12px 16px;gap:4px}
+  #np .np{display:none}
+  .np-mini{display:grid}
+  .cap[data-for="np"] span,.cap[data-for="pace"] span,.cap[data-for="walls"] span{display:none}
   .np-cap{font-size:16px}
   .dial{width:auto;height:62%}
   .paceval{display:none}
@@ -391,6 +400,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
           <button class="np-cap" id="npOpen" aria-label="Watch the film that is playing"><span id="npText"></span><small id="npAudio" hidden></small></button>
           <div class="np-tl" id="npTl" tabindex="0" role="slider" aria-label="Scrub through the films" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><b class="np-head" id="npHead"></b></div>
         </div>
+        <button class="np-mini" id="npMini" type="button" aria-pressed="false" aria-label="Sound for the film that is playing"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="trk" cx="24" cy="24" r="20"/><circle class="prog" id="npRing" cx="24" cy="24" r="20"/></svg><b id="npMiniN">01</b></button>
       </article>
       <article class="tile" id="pace" data-cat="toys" aria-label="Pace dial for the whole page">
         <div class="pacebox"><div class="ticks" id="ticks"></div>
@@ -592,7 +602,7 @@ const totalDur=()=>ART.reduce((t,_,i)=>t+dur(i),0);
 const mmss=t=>pad2(Math.floor(t/60))+':'+pad2(Math.floor(t%60));
 function seek(m,t){if(!m)return;if(m.seeking){m._pend=t;return}m.currentTime=t}
 media.forEach(m=>m&&m.tagName==='VIDEO'&&m.addEventListener('seeked',()=>{if(m._pend!=null){const t=m._pend;m._pend=null;m.currentTime=t}}));
-function applyListen(){const on=listenOn&&soundOn;media.forEach((m,i)=>{if(m&&m.tagName==='VIDEO')m.muted=!(on&&i===reelI)});const b=$('#npSnd');if(b){b.setAttribute('aria-pressed',String(on));b.textContent=on?'sound on':'sound off'}}
+function applyListen(){const on=listenOn&&soundOn;media.forEach((m,i)=>{if(m&&m.tagName==='VIDEO')m.muted=!(on&&i===reelI)});$('#npMini')?.setAttribute('aria-pressed',String(on));const b=$('#npSnd');if(b){b.setAttribute('aria-pressed',String(on));b.textContent=on?'sound on':'sound off'}}
 function fit(cv){const r=cv.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=Math.max(2,Math.round(r.width)),h=Math.max(2,Math.round(r.height));
   if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}return[w,h,dpr]}
 // colour painted at 1 css px, ordered-dithered in place, then scaled up crisp
@@ -616,10 +626,11 @@ tap($('#latest'),()=>openLb(3,$('#f4')));
 // now playing: the caption of the current film, its sound, and a scrubber across all films
 const npText=$('#npText'),npNum=$('#npNum'),npTl=$('#npTl'),npHead=$('#npHead'),npSnd=$('#npSnd');let npT0=0;
 const segs=ART.map((a,i)=>{const d=document.createElement('div');d.className='np-seg';d.innerHTML='<span></span>';d.firstChild.textContent=pad2(i+1);d.style.flex=String(dur(i));npTl.insertBefore(d,npHead);return d});
-function npStart(){npT0=performance.now();npNum.textContent='now playing · '+pad2(reelI+1);const c=credit(ART[reelI]);$('#npAudio').textContent=c;$('#npAudio').hidden=!c;
+function npStart(){npT0=performance.now();npNum.textContent='now playing · '+pad2(reelI+1);$('#npMiniN').textContent=pad2(reelI+1);const c=credit(ART[reelI]);$('#npAudio').textContent=c;$('#npAudio').hidden=!c;
   segs.forEach((d,i)=>d.classList.toggle('on',i===reelI));$$('.film').forEach(t=>t.classList.toggle('playing',+t.dataset.i===reelI))}
 function npTick(){const t=ART[reelI].title,n=RM?t.length:Math.min(t.length,Math.floor((performance.now()-npT0)/48*PACE));if(npText.textContent.length!==n)npText.textContent=t.slice(0,n);
   segs.forEach((d,i)=>d.style.flex=String(dur(i)));const sg=segs[reelI],m=media[reelI],k=m?clamp(m.currentTime/dur(reelI),0,1):0;npHead.style.left=(sg.offsetLeft+k*sg.offsetWidth)+'px';
+  npRing.style.strokeDashoffset=(125.66*(1-k)).toFixed(1);
   let off=0;for(let i=0;i<reelI;i++)off+=dur(i);const at=off+(m?m.currentTime:0);$('#npTc').textContent=mmss(at)+' / '+mmss(totalDur());npTl.setAttribute('aria-valuenow',Math.round(at/totalDur()*100))}
 function setReel(i,keep){reelI=i;const m=media[i];if(m&&!keep)m.currentTime=0;reelLastT=keep&&m?m.currentTime:0;applyListen();npStart()}
 function reelTrack(){const m=media[reelI];if(!m||reelDrag)return;const t=m.currentTime;if(t+.25<reelLastT){setReel((reelI+1)%ART.length);return}reelLastT=t}
@@ -632,6 +643,7 @@ function scrubAt(x){let i=segs.length-1;for(let k=0;k<segs.length;k++){const d=s
   npTl.addEventListener('keydown',e=>{const d={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];if(!d)return;e.preventDefault();const m=media[reelI];if(!m)return;const t=m.currentTime+d*2;
     if(t<0&&reelI>0)setReel(reelI-1,true);else if(t>dur(reelI))setReel((reelI+1)%ART.length);else seek(m,Math.max(0,t))})}
 tap($('#npOpen'),()=>openLb(reelI,$('#npOpen')));
+const npRing=$('#npRing');$('#npMini').addEventListener('click',()=>npSnd.click());
 npSnd.addEventListener('click',()=>{if(editing())return;if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}listenOn=!listenOn;applyListen();if(listenOn){const m=media[reelI];m&&m.play().catch(()=>{})}log(listenOn?'you turned the film sound on':'you muted the films','listen')});
 
 // lights on/out: an eyeball in the middle of its tile that watches the cursor; clicking it switches the page between light and dark
