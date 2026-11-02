@@ -723,7 +723,7 @@ function typing(){const t=bubble('typing');t.innerHTML='<i></i><i></i><i></i>';r
 let draft=null,sending=false;
 $('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)return;const text=msgIn.value.trim();if(!text)return;
   bubble('out',text);msgIn.value='';ping(5,.06);
-  if(!draft){draft=text;log('you wrote a message','msg');const t=typing();setTimeout(()=>{t.remove();bubble('in','Got it. What email should I reply to?');msgIn.placeholder='you@email.com';msgIn.type='email';msgIn.focus({preventScroll:true});ping(7,.05)},800);return}
+  if(!draft){draft=text;log('you wrote a message','msg');const t=typing();setTimeout(()=>{t.remove();bubble('in','Where can I reach you? Leave your email and I’ll get back to you.');msgIn.placeholder='you@email.com';msgIn.type='email';msgIn.focus({preventScroll:true});ping(7,.05)},800);return}
   const reply=text,body=draft;sending=true;const t=typing();
   let ok=false;
   if(FORM_TO){try{const r=await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(FORM_TO),{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
