@@ -183,8 +183,6 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .lb-snd::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ink3)}
 .lb-snd[aria-pressed="true"]{color:var(--ink)}
 .lb-snd[aria-pressed="true"]::before{background:var(--accent)}
-.lb-link{font-family:var(--f-mono);font-size:11px;color:var(--ink3);text-decoration:none}
-.lb-link:hover{color:var(--ink)}
 .lb-btn{width:44px;height:44px;border-radius:50%;background:var(--paper);color:var(--ink);display:grid;place-items:center;box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 18px -10px rgba(0,0,0,.25);justify-self:center;transition:transform .15s}
 .lb-btn:active{transform:scale(.92)}
 .lb-btn svg{width:18px;height:18px}
@@ -458,7 +456,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   <button class="lb-btn lb-x" id="lbX" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous piece"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
   <div class="lb-stage" id="lbStage"><div class="lb-track" id="lbTrack"></div></div>
-  <div class="lb-cap"><b id="lbTitle" style="font-weight:500"></b><span id="lbNum"></span><button class="lb-snd" id="lbSnd" type="button" aria-pressed="false">sound off</button><a id="lbLink" class="lb-link" href="#" target="_blank" rel="noopener">Instagram ↗</a></div>
+  <div class="lb-cap"><b id="lbTitle" style="font-weight:500"></b><span id="lbNum"></span><button class="lb-snd" id="lbSnd" type="button" aria-pressed="false">sound off</button></div>
   <button class="lb-btn lb-next" id="lbNext" aria-label="Next piece"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
 </div>
 <footer class="foot" id="hello">
@@ -603,7 +601,7 @@ let lbPos=0,lbTgt=0,lbVel=0,lbW=340,lbGap=28,lbRun=false,lbLast=0,lbDrag=null;
 const lbStep=()=>lbW+lbGap;
 function lbLayout(){const H=lbStage.clientHeight,W=lbStage.clientWidth,h=Math.max(120,Math.min(H,860,(W-(W<640?116:64))*16/9));lbW=h*9/16;lbGap=Math.round(clamp(W*.03,12,40));  // phones leave room to peek at the films either side
   lbStage.style.setProperty('--lh',h+'px');lbStage.style.setProperty('--lw',lbW+'px');lbStage.style.setProperty('--lg',lbGap+'px');lbRender()}
-function lbSet(k){lbI=k;const a=ART[k];$('#lbTitle').textContent=a.title+(a.audio?'  ·  '+credit(a):'');$('#lbLink').href=a.link||'https://www.instagram.com/serene.aiart/';$('#lbNum').textContent=pad2(k+1)+' / '+pad2(ART.length);
+function lbSet(k){lbI=k;const a=ART[k];$('#lbTitle').textContent=a.title+(a.audio?'  ·  '+credit(a):'');$('#lbNum').textContent=pad2(k+1)+' / '+pad2(ART.length);
   lbItems.forEach((_,i)=>{const v=lbVid(i);if(!v)return;if(i===k&&!lb.hidden){v.muted=!(lbSound&&soundOn);v.play().catch(()=>{})}else{v.pause();v.muted=true}})}
 function lbRender(){const x=lbStage.clientWidth/2-lbW/2-lbPos*lbStep();lbTrack.style.transform='translate3d('+x.toFixed(2)+'px,0,0)';
   lbItems.forEach((it,i)=>{const d=Math.min(1,Math.abs(i-lbPos));it.style.transform='scale('+(1-.14*d).toFixed(4)+')';it.style.opacity=(1-.4*d).toFixed(3);it.style.filter=d>.02?'blur('+(d*8).toFixed(1)+'px)':'none'});
