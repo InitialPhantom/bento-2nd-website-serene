@@ -254,7 +254,7 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .wp-dl{height:32px;padding:0 14px;border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:color .2s}
 .wp-dl:hover{color:var(--accent)}
 .wp-dl svg{width:13px;height:13px}
-.wp-note{grid-column:1 / -1;justify-self:end;margin:6px 8px 0;font-family:var(--f-mono);font-size:10.5px;color:var(--ink3)}
+.wp-note{grid-column:1 / -1;justify-self:end;margin:34px 0 -6px;font-family:var(--f-mono);font-size:12px;color:var(--ink3)}
 .wp-btn{position:absolute;top:calc(50% + 8px);z-index:3;width:42px;height:42px;margin-top:-21px;border-radius:50%;background:var(--paper);color:var(--ink);display:grid;place-items:center;
   box-shadow:0 1px 2px rgba(0,0,0,.1),0 10px 22px -10px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s,transform .15s}
 .wp-btn svg{width:17px;height:17px}
@@ -734,8 +734,10 @@ msgT.addEventListener('click',e=>{if(!e.target.closest('#compose'))msgPop.show()
 
 /* ---------- wallpapers: stills from the films, dithered in the tile, full colour in the window ---------- */
 // files are art/wallpapers/01.webp … NN.webp; raise WALL_N when adding more. The tile previews the first TILE_N.
-const WALL_N=21,TILE_N=7;
-const WALLS=Array.from({length:WALL_N},(_,i)=>{const n=pad2(i+1);return{n,src:'art/wallpapers/'+n+'.webp',img:null,dz:null}});
+// bump WALL_V whenever files are renumbered, so browsers don't show a cached picture under its old number
+const WALL_V='?v=2';
+const WALL_N=20,TILE_N=7;
+const WALLS=Array.from({length:WALL_N},(_,i)=>{const n=pad2(i+1);return{n,src:'art/wallpapers/'+n+'.webp'+WALL_V,img:null,dz:null}});
 WALLS.slice(0,TILE_N).forEach(p=>{p.img=new Image();p.img.decoding='async';p.img.src=p.src});
 $('#wallCount').textContent=pad2(WALL_N);
 function coverImg(c,m,x,y,w,h){const k=Math.max(w/m.naturalWidth,h/m.naturalHeight),dw=m.naturalWidth*k,dh=m.naturalHeight*k;c.drawImage(m,x+(w-dw)/2,y+(h-dh)/2,dw,dh)}
@@ -768,11 +770,11 @@ wpBack.type=wpPrev.type=wpNext.type='button';wpBack.setAttribute('aria-label','B
 wpHead.insertBefore(wpBack,wpHead.firstChild);wpHead.insertBefore(wpCount,wpHead.querySelector('.msg-x'));
 // files: square icons with a file name, like a folder
 const fileImgs=WALLS.map((p,i)=>{const b=mk('button','wp-file');b.type='button';b.setAttribute('aria-label','Open wallpaper '+(i+1));
-  const im=mk('img');im.src='art/wallpapers/thumbs/'+p.n+'.webp';im.alt='';im.loading='lazy';im.decoding='async';const nm=mk('span');nm.textContent='wallpaper-'+p.n;
+  const im=mk('img');im.src='art/wallpapers/thumbs/'+p.n+'.webp'+WALL_V;im.alt='';im.loading='lazy';im.decoding='async';const nm=mk('span');nm.textContent='wallpaper-'+p.n;
   b.append(im,nm);b.addEventListener('click',()=>wpOpen(i));wpFiles.appendChild(b);return im});
 // viewer: every wallpaper in a row that glides on a spring
 const wpItems=WALLS.map((p,i)=>{const f=mk('figure','wp-item'),im=mk('img');im.src=p.src;im.alt='serene.aiart wallpaper '+(i+1);im.loading='lazy';im.decoding='async';im.draggable=false;
-  const a=mk('a','wp-dl',DL_SVG+'Download');a.href='art/wallpapers/jpg/'+p.n+'.jpg';a.download='serene wallpaper '+(i+1)+'.jpg';f.append(im,a);wpTrack.appendChild(f);return f});
+  const a=mk('a','wp-dl',DL_SVG+'Download');a.href='art/wallpapers/jpg/'+p.n+'.jpg'+WALL_V;a.download='serene wallpaper '+(i+1)+'.jpg';f.append(im,a);wpTrack.appendChild(f);return f});
 const wpNote=mk('p','wp-note');wpNote.textContent='© serene.ai';
 wpView.appendChild(wpTrack);wpFiles.appendChild(wpNote);wpWin.append(wpFiles,wpView,wpPrev,wpNext);
 const blurN=document.getElementById('wpblurN');
