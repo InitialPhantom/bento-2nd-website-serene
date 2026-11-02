@@ -699,8 +699,8 @@ function popout(tile,title,size,hooks={}){const ov=document.createElement('div')
 const msgT=$('#msg'),compose=$('#compose');
 const msgPop=popout(msgT,'Message me',centred(520,540),{before:()=>msgPop.win.append(chat,compose),
   opened:()=>{chat.scrollTop=chat.scrollHeight;msgIn.focus({preventScroll:true})},after:()=>{msgT.append(chat,compose);chat.scrollTop=chat.scrollHeight}});
-msgT.addEventListener('click',()=>msgPop.show());
-msgIn.addEventListener('focus',()=>{if(!msgPop.open)msgPop.show()});
+// typing in the tile keeps it as it is; clicking anywhere else on the tile opens the window
+msgT.addEventListener('click',e=>{if(!e.target.closest('#compose'))msgPop.show()});
 
 /* ---------- wallpapers: stills from the films, dithered in the tile, full colour in the window ---------- */
 // files are art/wallpapers/01.webp … NN.webp; raise WALL_N when adding more. The tile previews the first TILE_N.
