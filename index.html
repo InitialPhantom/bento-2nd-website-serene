@@ -93,7 +93,7 @@ a{color:inherit}
   "feature feature f2 f3"
   "feature feature f2 f3"
   "np np pace blink"
-  "pond pond msg msg"}
+  "walls walls msg msg"}
 .tile{position:relative;background:var(--tile);border-radius:var(--r);overflow:hidden;min-width:0;align-self:start;height:calc(100% - var(--capH));transition:background .3s,opacity .35s,filter .35s}
 .tile:hover{background:var(--tile-h)}
 .tile.off,.cap.off{opacity:.25;filter:grayscale(1)}
@@ -108,7 +108,7 @@ a{color:inherit}
 a.tile:hover .go{color:var(--ink);transform:translate(2px,-2px)}
 a.tile{display:block;text-decoration:none;color:inherit}
 #feature{grid-area:feature} #f2{grid-area:f2} #f3{grid-area:f3} #np{grid-area:np} #blink{grid-area:blink}
-#pond{grid-area:pond;cursor:crosshair} #pace{grid-area:pace} #msg{grid-area:msg}
+#walls{grid-area:walls;cursor:zoom-in} #pace{grid-area:pace} #msg{grid-area:msg}
 
 /* films: one tile per serene.aiart piece, each shown once */
 @keyframes fog{0%,100%{filter:blur(0);opacity:1}50%{filter:blur(4px);opacity:.4}}
@@ -258,6 +258,16 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .msg-win.big .bubble{font-size:14.5px;max-width:76%}
 .msg-win.big .compose{left:18px;right:18px;bottom:18px}
 
+/* wallpapers window */
+.wp-grid{position:absolute;top:58px;left:0;right:0;bottom:0;display:flex;gap:14px;padding:4px 22px 22px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;opacity:0;transition:opacity .2s}
+.wp-grid::-webkit-scrollbar{display:none}
+.msg-win.big .wp-grid{opacity:1;transition:opacity .3s .2s}
+.wp-item{flex:none;height:100%;margin:0;display:flex;flex-direction:column;gap:10px;scroll-snap-align:center}
+.wp-item img{height:calc(100% - 42px);width:auto;aspect-ratio:9/16;object-fit:cover;border-radius:14px;background:var(--paper);display:block}
+.wp-dl{align-self:center;height:32px;padding:0 14px;border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:color .2s}
+.wp-dl:hover{color:var(--accent)}
+.wp-dl svg{width:13px;height:13px}
+
 /* small controls */
 .btn{position:absolute;z-index:5;height:28px;padding:0 12px;border-radius:999px;background:var(--paper);font-size:12.5px;font-weight:500;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .btn:hover{color:var(--accent)}
@@ -306,8 +316,8 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   :root{--gap:10px;--r:16px}
   /* phones: the three films side by side as portrait cards, everything else in short full-width rows */
   .grid{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:auto;
-    grid-template-rows:calc((100cqi - 2 * var(--gap)) / 3 * 1.62 + var(--gap)) calc(156px + var(--capH)) calc(124px + var(--capH)) calc(124px + var(--capH)) calc(140px + var(--capH));
-    grid-template-areas:"feature feature f2 f2 f3 f3" "np np np np np np" "pace pace pace blink blink blink" "pond pond pond pond pond pond" "msg msg msg msg msg msg"}
+    grid-template-rows:calc((100cqi - 2 * var(--gap)) / 3 * 1.62 + var(--gap)) calc(156px + var(--capH)) calc(124px + var(--capH)) calc(150px + var(--capH)) calc(140px + var(--capH));
+    grid-template-areas:"feature feature f2 f2 f3 f3" "np np np np np np" "pace pace pace blink blink blink" "walls walls walls walls walls walls" "msg msg msg msg msg msg"}
   .grid .film{height:calc(100% - var(--gap))}
   .film .fn{left:8px;bottom:8px}
   .np{padding:12px 16px;gap:4px}
@@ -361,8 +371,8 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
       <article class="tile" id="blink" tabindex="0" role="button" aria-pressed="false" aria-label="An eyeball that follows your cursor. Switches the page between light and dark.">
         <canvas class="full"></canvas>
       </article>
-      <article class="tile" id="pond" data-cat="worlds" tabindex="0" aria-label="Pond. Lead the fish with your pointer, click to drop a pebble.">
-        <canvas class="full"></canvas><div class="lab"><span class="mono">01</span>Pond</div>
+      <article class="tile" id="walls" tabindex="0" role="button" aria-label="Wallpapers from the films. Opens them.">
+        <canvas class="full"></canvas>
       </article>
       <article class="tile" id="msg" data-cat="notes" aria-label="Message me">
         <div class="chat" id="chat" aria-live="polite"><div class="bubble in">Got an idea for a film, a collab or a commission? Tell me about it.</div></div>
@@ -374,7 +384,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
       <div class="cap" style="grid-area:np">Now playing<span id="npTc">00:00 / 00:00</span></div>
       <div class="cap" style="grid-area:pace">Pace<span id="paceVal2">1.00×</span></div>
       <div class="cap" style="grid-area:blink" id="blinkCap">Lights on</div>
-      <div class="cap" style="grid-area:pond">Pond</div>
+      <div class="cap" style="grid-area:walls">Wallpapers<span>05</span></div>
       <div class="cap" style="grid-area:msg">Message me</div>
     </div>
   </main>
@@ -513,35 +523,6 @@ const planet=scene(planetC,planetC,(c,w,h,t,dt,S)=>{const st=S.st;
   planetC.addEventListener('pointermove',e=>{if(!down)return;const a=ang(e);let d=a-down.a;if(d>Math.PI)d-=TAU;if(d<-Math.PI)d+=TAU;S.st.rot+=d;down.moved+=Math.abs(d);const n=performance.now();S.st.vel=d/Math.max(.008,(n-down.lt)/1000);down.lt=n;down.a=a});
   planetC.addEventListener('pointerup',()=>{if(!down)return;S.st.drag=false;S.st.vel=clamp(S.st.vel,-8,8);if(down.moved<.05&&performance.now()-down.t<350){S.st.night=!S.st.night;ping(S.st.night?0:4);log(S.st.night?'you turned the planet to night':'you brought the sun back','planet')}else log('you spun the planet','spin');down=null})}
 
-/* ---------- pond ---------- */
-const WP=[3.2,5.4,6.4,6.6,6.1,5.2,4.1,3,2,1.2];
-function fishPath(c,f,ox=0,oy=0){const P=f.pts,L=[],R=[];for(let k=0;k<P.length;k++){const a=P[Math.max(0,k-1)],b=P[Math.min(P.length-1,k+1)];let dx=a.x-b.x,dy=a.y-b.y;const d=Math.hypot(dx,dy)||1;dx/=d;dy/=d;const w=WP[k]*f.s;L.push([P[k].x-dy*w+ox,P[k].y+dx*w+oy]);R.push([P[k].x+dy*w+ox,P[k].y-dx*w+oy])}
-  const h=P[0],n=P[1],hx=h.x-n.x,hy=h.y-n.y,hd=Math.hypot(hx,hy)||1;c.beginPath();c.moveTo(L[0][0],L[0][1]);c.quadraticCurveTo(h.x+hx/hd*6*f.s+ox,h.y+hy/hd*6*f.s+oy,R[0][0],R[0][1]);
-  for(let k=1;k<R.length;k++)c.lineTo(R[k][0],R[k][1]);for(let k=L.length-1;k>=0;k--)c.lineTo(L[k][0],L[k][1]);c.closePath()}
-const pond=scene($('#pond'),$('#pond canvas'),(c,w,h,t,dt,S)=>{const st=S.st;
-  for(const f of st.fish){const hd=f.pts[0];let tx,ty;
-    if(S.over){tx=S.mx+Math.cos(f.ph+t*1.2)*40;ty=S.my+Math.sin(f.ph+t*1.2)*30}else{tx=w*(.5+.38*Math.cos(t*.17*f.sp+f.ph));ty=h*(.5+.34*Math.sin(t*.23*f.sp+f.ph*2))}
-    const da=Math.atan2(ty-hd.y,tx-hd.x),diff=((da-f.a+Math.PI*3)%TAU)-Math.PI;f.a+=diff*Math.min(1,dt*2);
-    const v=(S.over?80:36)*f.sp;hd.x+=Math.cos(f.a)*v*dt;hd.y+=Math.sin(f.a)*v*dt;hd.x+=Math.cos(f.a+Math.PI/2)*Math.sin(t*6*f.sp+f.ph)*.25;
-    for(let k=1;k<f.pts.length;k++){const a=f.pts[k-1],b=f.pts[k],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1,seg=4.6*f.s;b.x=a.x+dx/d*seg;b.y=a.y+dy/d*seg}}
-  st.rip=st.rip.filter(r=>(r.a+=dt)<2.2);
-  dither(S,2,o=>{const g=o.createLinearGradient(0,0,w*.7,h);g.addColorStop(0,G(.03));g.addColorStop(1,G(.24));o.fillStyle=g;o.fillRect(0,0,w,h);
-    o.save();o.filter='blur(5px)';o.globalAlpha=.9;o.strokeStyle=G(0);o.lineWidth=7;o.lineCap='round';
-    for(let i=0;i<10;i++){o.beginPath();for(let x=-10;x<=w+10;x+=12){const y=(i+.5)*h/10+Math.sin(x*.035+t*.9+i*1.7)*8+Math.sin(x*.013-t*.5+i)*12;x<0?o.moveTo(x,y):o.lineTo(x,y)}o.stroke()}
-    o.restore();
-    for(const p of st.pads){const x=p.x*w,y=p.y*h+Math.sin(t+p.x*9)*1.5;o.beginPath();o.moveTo(x,y);o.arc(x,y,p.r,p.rot+.3,p.rot+TAU-.3);o.closePath();o.fillStyle=G(.62);o.fill()}
-    o.save();o.filter='blur(4px)';for(const f of st.fish){fishPath(o,f,7,11);o.fillStyle=G(.5);o.fill()}o.restore()});
-  c.lineWidth=1;for(const r of st.rip){const k=r.a/2.2;c.strokeStyle=C.ink;c.globalAlpha=.5*(1-k);c.beginPath();c.ellipse(r.x,r.y,k*70,k*44,0,0,TAU);c.stroke();c.beginPath();c.ellipse(r.x,r.y,k*38,k*24,0,0,TAU);c.stroke()}c.globalAlpha=1;
-  for(const f of st.fish){const P=f.pts,e=P[9],p=P[7],ta=Math.atan2(e.y-p.y,e.x-p.x);
-    c.save();c.translate(e.x,e.y);c.rotate(ta+Math.sin(t*7+f.ph)*.3);c.fillStyle='#ffffff';c.beginPath();c.moveTo(-2,0);c.quadraticCurveTo(8*f.s,-10*f.s,13*f.s,-6*f.s);c.quadraticCurveTo(8*f.s,0,13*f.s,6*f.s);c.quadraticCurveTo(8*f.s,10*f.s,-2,0);c.fill();c.restore();
-    fishPath(c,f);c.fillStyle='#ffffff';c.fill();c.lineWidth=1;c.strokeStyle='rgba(0,0,0,.55)';c.stroke();
-    c.save();fishPath(c,f);c.clip();for(const sp of f.spots){const q=P[sp.k];c.beginPath();c.ellipse(q.x+sp.dx*f.s,q.y+sp.dy*f.s,sp.r*f.s,sp.r*f.s*.8,0,0,TAU);c.fillStyle=sp.c?'#1c1c1c':C.accent;c.fill()}c.restore();
-    const dir=Math.atan2(P[0].y-P[1].y,P[0].x-P[1].x);c.fillStyle='#1c1c1c';for(const sd of[1,-1]){c.beginPath();c.arc(P[0].x+Math.cos(dir+sd*.8)*3.4*f.s,P[0].y+Math.sin(dir+sd*.8)*3.4*f.s,.9*f.s,0,TAU);c.fill()}}
-},{rip:[],fish:[],pads:[{x:.14,y:.22,r:22,rot:.5},{x:.86,y:.8,r:30,rot:2.2},{x:.72,y:.14,r:14,rot:-.8},{x:.22,y:.84,r:17,rot:1.4}],resized(S){const st=S.st;if(st.fish.length)return;
-  st.fish=[...Array(5)].map((_,i)=>{const x=S.w*(.2+.6*rnd(i)),y=S.h*(.2+.6*rnd(i+3)),s=1.1+rnd(i+11)*.45;return{pts:[...Array(10)].map((_,k)=>({x:x-k*5,y})),a:0,sp:.75+rnd(i+7)*.5,ph:rnd(i+9)*TAU,s,
-    spots:[...Array(1+Math.floor(rnd(i+2)*3))].map((_,j)=>({k:1+Math.floor(rnd(i*7+j)*7),dx:(rnd(i*5+j)-.5)*6,dy:(rnd(i*3+j)-.5)*7,r:2.4+rnd(i+j)*2.4,c:(i+j)%3?1:0}))}})}});
-tap($('#pond'),e=>{const[x,y]=local(pond,e);pond.st.rip.push({x,y,a:0});ping(Math.floor(Math.random()*8),.06);log('you dropped a pebble in the pond','pond')});
-
 /* ---------- serene.aiart films ---------- */
 // Each piece: a video (or image) file next to index.html, its caption, the song credit ("Song · Artist"), and the Instagram post.
 const ART=[
@@ -619,27 +600,20 @@ function scrubAt(x){let i=segs.length-1;for(let k=0;k<segs.length;k++){const d=s
 tap($('#npOpen'),()=>openLb(reelI,$('#npOpen')));
 npSnd.addEventListener('click',()=>{if(editing())return;if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}listenOn=!listenOn;applyListen();if(listenOn){const m=media[reelI];m&&m.play().catch(()=>{})}log(listenOn?'you turned the film sound on':'you muted the films','listen')});
 
-// lights on/out: an eyeball that follows the cursor around its tile; clicking it switches the page between light and dark
+// lights on/out: an eyeball in the middle of its tile that watches the cursor; clicking it switches the page between light and dark
 let GX=-1e4,GY=-1e4;addEventListener('pointermove',e=>{GX=e.clientX;GY=e.clientY},{passive:true});
-const eye=scene($('#blink'),$('#blink canvas'),(c,w,h,t,dt,S)=>{const st=S.st,pk=clamp((T-st.pop)/.45,0,1),r=Math.max(6,Math.min(w,h)*.2)*(1+.16*Math.sin(pk*Math.PI)*(1-pk));
-  // follow the cursor (kept inside the tile); before anyone moves a pointer, drift between random spots
-  if(w<40||h<40)return;
-  const R=S.c.getBoundingClientRect(),m=r+4,seen=GX>-1e3;
-  if(!st.init){st.x=w/2;st.y=h/2;st.tx=st.x;st.ty=st.y;st.init=1}
-  if(seen){st.tx=clamp(GX-R.left,m,w-m);st.ty=clamp(GY-R.top,m,h-m)}
-  else if(T>st.next){st.tx=m+Math.random()*Math.max(1,w-2*m);st.ty=m+Math.random()*Math.max(1,h-2*m);st.next=T+1.4+Math.random()*2.6}
-  const k=Math.min(dt,.05);st.vx+=((st.tx-st.x)*14-st.vx*6)*k;st.vy+=((st.ty-st.y)*14-st.vy*6)*k;st.x=clamp(st.x+st.vx*k,r,w-r);st.y=clamp(st.y+st.vy*k,r,h-r);
-  // gaze: at the pointer when it's close, otherwise where it's heading
-  let gx=GX-(R.left+st.x),gy=GY-(R.top+st.y),near=Math.hypot(gx,gy)<380;if(!near){gx=st.vx;gy=st.vy}
-  const gd=Math.hypot(gx,gy)||1,gm=Math.min(1,gd/(near?150:70)),ek=Math.min(1,dt*6+.02);st.gx=lerp(st.gx,gx/gd*gm,ek);st.gy=lerp(st.gy,gy/gd*gm,ek);
-  st.dil=lerp(st.dil,C.dark?1:0,Math.min(1,dt*3+.02));
-  const gmag=Math.hypot(st.gx,st.gy),ga=Math.atan2(st.gy,st.gx),ix=st.x+st.gx*r*.52,iy=st.y+st.gy*r*.52,ir=r*.46,sq=1-gmag*.34,pr=ir*(.36+st.dil*.24);
+const eye=scene($('#blink'),$('#blink canvas'),(c,w,h,t,dt,S)=>{const st=S.st,pk=clamp((T-st.pop)/.45,0,1),r=Math.max(6,Math.min(w,h)*.26)*(1+.14*Math.sin(pk*Math.PI)*(1-pk)),x=w/2,y=h/2;
+  const R=S.c.getBoundingClientRect();let gx,gy,gm;
+  if(GX>-1e3){gx=GX-(R.left+x);gy=GY-(R.top+y);const d=Math.hypot(gx,gy)||1;gm=Math.min(1,d/180);gx/=d;gy/=d}
+  else{gx=Math.cos(t*.5);gy=Math.sin(t*.7)*.6;gm=.5}   // before any cursor shows up, look around slowly
+  const ek=Math.min(1,dt*8+.02);st.gx=lerp(st.gx,gx*gm,ek);st.gy=lerp(st.gy,gy*gm,ek);st.dil=lerp(st.dil,C.dark?1:0,Math.min(1,dt*3+.02));
+  const gmag=Math.hypot(st.gx,st.gy),ga=Math.atan2(st.gy,st.gx),ix=x+st.gx*r*.52,iy=y+st.gy*r*.52,ir=r*.46,sq=1-gmag*.34,pr=ir*(.36+st.dil*.24);
   const disc=(o,rad)=>{o.beginPath();o.ellipse(ix,iy,Math.max(.1,rad*sq),Math.max(.1,rad),ga,0,TAU)};
-  dither(S,1,o=>{gsphere(o,st.x,st.y,r,inv(.02),inv(.52));o.save();o.beginPath();o.arc(st.x,st.y,r,0,TAU);o.clip();disc(o,ir);o.fillStyle=GI(.6);o.fill();disc(o,pr);o.fillStyle=GI(1);o.fill();o.restore()});
-  c.save();c.beginPath();c.arc(st.x,st.y,r,0,TAU);c.clip();disc(c,ir);c.strokeStyle=C.accent;c.lineWidth=1.4;c.stroke();
+  dither(S,1,o=>{gsphere(o,x,y,r,inv(.02),inv(.52));o.save();o.beginPath();o.arc(x,y,r,0,TAU);o.clip();disc(o,ir);o.fillStyle=GI(.6);o.fill();disc(o,pr);o.fillStyle=GI(1);o.fill();o.restore()});
+  c.save();c.beginPath();c.arc(x,y,r,0,TAU);c.clip();disc(c,ir);c.strokeStyle=C.accent;c.lineWidth=1.4;c.stroke();
   c.fillStyle='#fff';c.beginPath();c.arc(ix-ir*.3,iy-ir*.36,ir*.15,0,TAU);c.fill();c.restore();
-  c.beginPath();c.arc(st.x,st.y,r,0,TAU);c.strokeStyle=C.ink;c.globalAlpha=.35;c.lineWidth=1;c.stroke();c.globalAlpha=1;
-},{init:0,next:0,x:0,y:0,tx:0,ty:0,vx:0,vy:0,gx:0,gy:0,dil:0,pop:-9});
+  c.beginPath();c.arc(x,y,r,0,TAU);c.strokeStyle=C.ink;c.globalAlpha=.35;c.lineWidth=1;c.stroke();c.globalAlpha=1;
+},{gx:0,gy:0,dil:0,pop:-9});
 function setTheme(dark,quiet){const h=document.documentElement;if(!quiet){h.classList.add('theming');clearTimeout(setTheme._t);setTheme._t=setTimeout(()=>h.classList.remove('theming'),650)}
   h.dataset.theme=dark?'dark':'light';readC();store.set('lyn-theme',dark?'dark':'light');$('#blinkCap').textContent=dark?'Lights out':'Lights on';$('#blink').setAttribute('aria-pressed',String(dark));
   if(!quiet){ping(dark?0:4,.06);log(dark?'you turned the lights out':'you turned the lights back on','theme')}}
@@ -657,9 +631,9 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
 // Everything lives in this closure: nothing here can be called from outside, and editing
 // only starts after a token has been checked with GitHub on this visit.
 (function(){
-  const DEF={feature:[0,0,2,2],f2:[2,0,1,2],f3:[3,0,1,2],np:[0,2,2,1],pace:[2,2,1,1],blink:[3,2,1,1],pond:[0,3,2,1],msg:[2,3,2,1]};
+  const DEF={feature:[0,0,2,2],f2:[2,0,1,2],f3:[3,0,1,2],np:[0,2,2,1],pace:[2,2,1,1],blink:[3,2,1,1],walls:[0,3,2,1],msg:[2,3,2,1]};
   // any size from 1x1 up to 4 wide x 3 tall; a few tiles need at least 2 columns for their contents
-  const MINW={np:2,msg:2},MAXH=3,minW=id=>MINW[id]||1;
+  const MINW={np:2,walls:2,msg:2},MAXH=3,minW=id=>MINW[id]||1;
   const REPO='InitialPhantom/bento-2nd-website-serene',FILE='layout.json',BRANCH='main',COLS=4;
   const grid=document.querySelector('.grid'),wide=matchMedia('(min-width:641px)'),ids=Object.keys(DEF);
   const capOf=id=>document.querySelector(`.cap[data-for="${id}"]`);
@@ -775,27 +749,55 @@ $('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)
   else if(!FORM_TO){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! My inbox isn’t connected here yet, so this message wasn’t sent.')}
   else emailBubble('That didn’t go through. Send your email again, or write to me at')});
 
-// the tile opens into a window in the middle of the page and shrinks back into place on close
-const msgT=$('#msg'),compose=$('#compose'),msgOv=document.createElement('div'),msgWin=document.createElement('div');
-msgOv.className='msg-ov';msgOv.hidden=true;msgWin.className='msg-win';msgWin.setAttribute('role','dialog');msgWin.setAttribute('aria-modal','true');msgWin.setAttribute('aria-label','Message me');
-msgWin.innerHTML='<div class="msg-head"><span>Message me</span><button class="msg-x" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>';
-msgOv.appendChild(msgWin);document.body.appendChild(msgOv);
-let msgOpen=false,msgBusy=false;
+// pop-out windows: a tile grows into a window in the middle of the page and shrinks back into place on close
 const boxOf=el=>{const r=el.getBoundingClientRect();return{left:r.left,top:r.top,width:r.width,height:r.height}};
-const centreBox=()=>{const w=Math.min(520,innerWidth-32),h=Math.min(540,innerHeight-48);return{left:(innerWidth-w)/2,top:(innerHeight-h)/2,width:w,height:h}};
-const setBox=b=>{for(const k in b)msgWin.style[k]=b[k]+'px'};
-function openMsg(){if(msgOpen||msgBusy||editing())return;msgOpen=msgBusy=true;const from=boxOf(msgT);
-  msgWin.append(chat,compose);msgOv.hidden=false;msgWin.style.transition='none';setBox(from);document.documentElement.style.overflow='hidden';
-  void msgWin.offsetWidth;msgWin.style.transition='';msgOv.classList.add('open');msgWin.classList.add('big');setBox(centreBox());
-  setTimeout(()=>{msgBusy=false;chat.scrollTop=chat.scrollHeight;msgIn.focus({preventScroll:true})},RM?0:480);ping(4,.05)}
-function closeMsg(){if(!msgOpen||msgBusy)return;msgBusy=true;document.documentElement.style.overflow='';msgOv.classList.remove('open');msgWin.classList.remove('big');setBox(boxOf(msgT));
-  setTimeout(()=>{msgT.append(chat,compose);msgOv.hidden=true;msgOpen=msgBusy=false;chat.scrollTop=chat.scrollHeight},RM?0:470)}
-msgT.addEventListener('click',()=>openMsg());
-msgIn.addEventListener('focus',()=>{if(!msgOpen)openMsg()});
-msgWin.querySelector('.msg-x').addEventListener('click',closeMsg);
-msgOv.addEventListener('click',e=>{if(e.target===msgOv)closeMsg()});
-addEventListener('keydown',e=>{if(msgOpen&&e.key==='Escape')closeMsg()});
-addEventListener('resize',()=>{if(msgOpen&&!msgBusy)setBox(centreBox())});
+const centred=(mw,mh)=>()=>{const w=Math.min(mw,innerWidth-32),h=Math.min(mh,innerHeight-48);return{left:(innerWidth-w)/2,top:(innerHeight-h)/2,width:w,height:h}};
+const X_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+function popout(tile,title,size,hooks={}){const ov=document.createElement('div'),win=document.createElement('div'),P={win,open:false,busy:false};
+  ov.className='msg-ov';ov.hidden=true;win.className='msg-win';win.setAttribute('role','dialog');win.setAttribute('aria-modal','true');win.setAttribute('aria-label',title);
+  win.innerHTML='<div class="msg-head"><span></span><button class="msg-x" type="button" aria-label="Close">'+X_SVG+'</button></div>';win.querySelector('.msg-head span').textContent=title;
+  ov.appendChild(win);document.body.appendChild(ov);
+  const put=b=>{for(const k in b)win.style[k]=b[k]+'px'};
+  P.show=()=>{if(P.open||P.busy||editing())return;P.open=P.busy=true;const from=boxOf(tile);hooks.before?.();ov.hidden=false;win.style.transition='none';put(from);document.documentElement.style.overflow='hidden';
+    void win.offsetWidth;win.style.transition='';ov.classList.add('open');win.classList.add('big');put(size());setTimeout(()=>{P.busy=false;hooks.opened?.()},RM?0:480);ping(4,.05)};
+  P.hide=()=>{if(!P.open||P.busy)return;P.busy=true;document.documentElement.style.overflow='';ov.classList.remove('open');win.classList.remove('big');put(boxOf(tile));
+    setTimeout(()=>{hooks.after?.();ov.hidden=true;P.open=P.busy=false},RM?0:470)};
+  win.querySelector('.msg-x').addEventListener('click',P.hide);ov.addEventListener('click',e=>{if(e.target===ov)P.hide()});
+  addEventListener('keydown',e=>{if(P.open&&e.key==='Escape')P.hide()});addEventListener('resize',()=>{if(P.open&&!P.busy)put(size())});return P}
+
+const msgT=$('#msg'),compose=$('#compose');
+const msgPop=popout(msgT,'Message me',centred(520,540),{before:()=>msgPop.win.append(chat,compose),
+  opened:()=>{chat.scrollTop=chat.scrollHeight;msgIn.focus({preventScroll:true})},after:()=>{msgT.append(chat,compose);chat.scrollTop=chat.scrollHeight}});
+msgT.addEventListener('click',()=>msgPop.show());
+msgIn.addEventListener('focus',()=>{if(!msgPop.open)msgPop.show()});
+
+/* ---------- wallpapers: stills from the films, dithered in the tile, full colour in the window ---------- */
+const WALLS=['01','02','03','04','05'].map(n=>{const img=new Image();img.decoding='async';img.src='art/wallpapers/'+n+'.webp';return{n,img,src:img.src,dz:null}});
+function coverImg(c,m,x,y,w,h){const k=Math.max(w/m.naturalWidth,h/m.naturalHeight),dw=m.naturalWidth*k,dh=m.naturalHeight*k;c.drawImage(m,x+(w-dw)/2,y+(h-dh)/2,dw,dh)}
+function wallDither(p,w,h){if(p.dz&&p.dz.width===w&&p.dz.height===h&&p.dk===C.dark)return p.dz;if(!p.img.naturalWidth)return null;
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d',{willReadFrequently:true});x.fillStyle=C.paper;x.fillRect(0,0,w,h);coverImg(x,p.img,0,0,w,h);
+  let im;try{im=x.getImageData(0,0,w,h)}catch{return null}ditherImg(im);x.putImageData(im,0,0);p.dz=cv;p.dk=C.dark;return cv}
+const wallT=$('#walls');
+const walls=scene(wallT,$('#walls canvas'),(c,w,h,t,dt,S)=>{const st=S.st,n=WALLS.length,pad=14,ch=Math.max(10,Math.round(h-pad*2)),cw=Math.round(ch*9/16),gap=10;
+  const step=Math.min(cw+gap,(w-pad*2-cw)/(n-1)),x0=(w-(step*(n-1)+cw))/2;
+  st.rv=lerp(st.rv,S.over&&!editing()?1:0,Math.min(1,dt*6+.02));
+  let hi=-1;if(S.over)for(let i=n-1;i>=0;i--){const x=x0+i*step;if(S.mx>=x&&S.mx<=x+cw){hi=i;break}}
+  const order=[...WALLS.keys()].filter(i=>i!==hi);if(hi>=0)order.push(hi);
+  for(const i of order){const p=WALLS[i];p.lift=lerp(p.lift||0,i===hi?1:0,Math.min(1,dt*10+.02));const x=Math.round(x0+i*step),y=pad-p.lift*6;
+    c.save();c.beginPath();c.roundRect(x,y,cw,ch,8);c.clip();c.fillStyle=C.paper;c.fillRect(x,y,cw,ch);
+    const d=wallDither(p,cw,ch);if(d){c.imageSmoothingEnabled=false;c.drawImage(d,x,y,cw,ch)}
+    if(st.rv>.01&&p.img.naturalWidth){c.globalAlpha=st.rv;c.imageSmoothingEnabled=true;coverImg(c,p.img,x,y,cw,ch);c.globalAlpha=1}
+    c.restore();c.lineWidth=2;c.strokeStyle=C.tile;c.beginPath();c.roundRect(x,y,cw,ch,8);c.stroke()}
+},{rv:0});
+WALLS.forEach(p=>p.img.addEventListener('load',()=>paint(walls,0)));
+const DL_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>';
+const wallPop=popout(wallT,'Wallpapers',centred(980,640));
+{const grid=document.createElement('div');grid.className='wp-grid';
+  WALLS.forEach((p,i)=>{const f=document.createElement('figure');f.className='wp-item';const im=document.createElement('img');im.src=p.src;im.alt='serene.aiart wallpaper '+(i+1);im.loading='lazy';im.decoding='async';
+    const a=document.createElement('a');a.className='wp-dl';a.href=p.src;a.download='serene-aiart-wallpaper-'+p.n+'.webp';a.innerHTML=DL_SVG+'Download';f.append(im,a);grid.appendChild(f)});
+  grid.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){grid.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+  wallPop.win.appendChild(grid)}
+tap(wallT,()=>{wallPop.show();log('you opened the wallpapers','walls')});
 
 /* ---------- word split, filters, theme ---------- */
 $$('[data-split]').forEach(el=>{el.innerHTML=[...el.textContent].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':ch}</span>`).join('')});
