@@ -39,6 +39,6 @@ Notes:
 
 ## Placeholders to fill in
 
-- **Message me**: set `CONTACT_EMAIL` near the bottom of `index.html` to your address. "Send" then opens a pre-filled email to you. Until it's set, the tile tells visitors their message wasn't sent.
+- **Message me**: sent with [FormSubmit](https://formsubmit.co), so no server is needed. Set `FORM_TO` near the bottom of `index.html` to your email, send one test message from the live site, and click the confirmation link FormSubmit emails you. FormSubmit then gives you a random address; put that in `FORM_TO` instead so your email isn't in the page. The tile asks for the visitor's message, then their reply email. Until `FORM_TO` is set, it tells visitors their message wasn't sent.
 - **Films**: three reels from @serene.aiart live in `art/` and are listed in the `ART` array near the bottom of `index.html`, with their caption and post link. Each entry has an `audio` field for the song credit ("Song · Artist"); it shows next to the title in the captions, Now playing and the viewer. The credits are still empty. To add a piece, drop a video into `art/`, add an entry, and add a film tile with a new `data-i` so no piece repeats.
 - The "latest" line in the profile names the newest piece; update it when you post.

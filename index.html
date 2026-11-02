@@ -57,7 +57,8 @@ a{color:inherit}
 @keyframes blinkw{0%,100%{opacity:1}40%{opacity:.12}52%{opacity:1}}
 .last button{color:var(--ink2);text-align:left;font:inherit}
 .last button:hover{color:var(--ink)}
-.ig{margin-top:16px;display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px 0 11px;border-radius:999px;background:var(--tile);color:var(--ink);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .2s}
+.socials{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+.ig{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px 0 11px;border-radius:999px;background:var(--tile);color:var(--ink);text-decoration:none;font-size:13.5px;font-weight:500;transition:background .2s}
 .ig svg{width:17px;height:17px}
 .ig span{color:var(--ink3);font-size:12px;transition:color .2s,transform .25s}
 .ig:hover{background:var(--tile-h)}
@@ -266,8 +267,8 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   .planet{width:100px;height:100px;margin:0 0 0 -6px;grid-row:1 / 3}
   .me h1{margin:0;font-size:16px}
   .statement{margin:2px 0 0;font-size:16px;line-height:1.5}
-  .sub,.last,.tabs,.ig{grid-column:1 / -1;justify-self:start}
-  .ig{margin-top:12px}
+  .sub,.last,.tabs,.socials{grid-column:1 / -1}
+  .socials{margin-top:12px}
   .sub{font-size:14.5px;margin-top:16px}
   .last{margin-top:14px}
   .tabs{margin-top:16px;gap:0 4px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
@@ -299,7 +300,10 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
     <h1>Hey, I'm <b>Lyn</b>.</h1>
     <p class="statement">I run <a class="hot" href="https://www.instagram.com/serene.aiart/" target="_blank" rel="noopener">serene.aiart</a>, where I make <span class="hot w-fog">dreamlike</span> short <span class="hot w-blink" data-split>films</span> with AI.</p>
     <div class="last mono">latest <button id="latest">There are versions of you still wandering abandoned dreams.</button></div>
-    <a class="ig" href="https://www.instagram.com/serene.aiart/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r=".9" fill="currentColor" stroke="none"/></svg>@serene.aiart<span>↗</span></a>
+    <div class="socials">
+      <a class="ig" href="https://www.instagram.com/serene.aiart/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r=".9" fill="currentColor" stroke="none"/></svg>@serene.aiart<span>↗</span></a>
+      <a class="ig" href="https://www.tiktok.com/@serene.aix" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 3.5v11.25a3.75 3.75 0 1 1-3.75-3.75"/><path d="M13.5 3.5c.5 2.6 2.4 4.4 5 4.6"/></svg>@serene.aix<span>↗</span></a>
+    </div>
   </aside>
 
   <main class="gridwrap" id="work" style="scroll-margin-top:100px">
@@ -708,17 +712,26 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
   setTimeout(open,400);
 })();
 
-/* ---------- message me ---------- */
-// Set this to your email so "Send" opens a pre-filled email to you.
-const CONTACT_EMAIL='';
+/* ---------- message me (sent with FormSubmit, no server needed) ---------- */
+// Your email, or the random address FormSubmit gives you after you confirm the first message
+// (using that one keeps your email out of the page). Leave empty to turn sending off.
+const FORM_TO='';
 const chat=$('#chat'),msgIn=$('#msgIn');
-function bubble(cls,html){const b=document.createElement('div');b.className='bubble '+cls;if(html)b.textContent=html;chat.appendChild(b);while(chat.children.length>4)chat.firstChild.remove();return b}
-$('#compose').addEventListener('submit',e=>{e.preventDefault();const text=msgIn.value.trim();if(!text)return;
-  bubble('out',text);msgIn.value='';ping(5,.06);log('you wrote a message','msg');
-  const ty=bubble('typing');ty.innerHTML='<i></i><i></i><i></i>';
-  setTimeout(()=>{ty.remove();
-    if(CONTACT_EMAIL){bubble('in','Thanks! Opening your email so it reaches me.');location.href='mailto:'+CONTACT_EMAIL+'?subject='+encodeURIComponent('Hello from your site')+'&body='+encodeURIComponent(text)}
-    else bubble('in','Thanks! My inbox isn\'t connected here yet, so this message wasn\'t sent.');ping(7,.05)},1100)});
+function bubble(cls,text){const b=document.createElement('div');b.className='bubble '+cls;if(text)b.textContent=text;chat.appendChild(b);while(chat.children.length>4)chat.firstChild.remove();return b}
+function typing(){const t=bubble('typing');t.innerHTML='<i></i><i></i><i></i>';return t}
+// two steps, like a chat: the message, then where to reply
+let draft=null,sending=false;
+$('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)return;const text=msgIn.value.trim();if(!text)return;
+  bubble('out',text);msgIn.value='';ping(5,.06);
+  if(!draft){draft=text;log('you wrote a message','msg');const t=typing();setTimeout(()=>{t.remove();bubble('in','Got it. What email should I reply to?');msgIn.placeholder='you@email.com';msgIn.type='email';msgIn.focus({preventScroll:true});ping(7,.05)},800);return}
+  const reply=text,body=draft;sending=true;const t=typing();
+  let ok=false;
+  if(FORM_TO){try{const r=await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(FORM_TO),{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
+      body:JSON.stringify({message:body,email:reply,_subject:'New message from your site',_template:'box',_captcha:'false'})});const j=await r.json().catch(()=>({}));ok=r.ok&&String(j.success)==='true'}catch{}}
+  t.remove();sending=false;
+  if(ok){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! It’s on its way to me.');log('you sent a message','sent');ping(7,.05)}
+  else if(!FORM_TO){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! My inbox isn’t connected here yet, so this message wasn’t sent.')}
+  else bubble('in','That didn’t go through. Check your connection and send your email again.')});
 
 /* ---------- word split, filters, theme ---------- */
 $$('[data-split]').forEach(el=>{el.innerHTML=[...el.textContent].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':ch}</span>`).join('')});
