@@ -90,8 +90,8 @@ a{color:inherit}
 .gridwrap{container-type:inline-size;min-width:0}
 .grid{--capH:34px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:calc((100cqi - 3 * var(--gap)) / 4 + var(--capH));column-gap:var(--gap);row-gap:calc(var(--gap) - 6px);
   grid-template-areas:
-  "feature feature f2 f3"
-  "feature feature f2 f3"
+  "feature f2 f3 f4"
+  "feature f2 f3 f4"
   "np np pace blink"
   "walls walls msg msg"}
 .tile{position:relative;background:var(--tile);border-radius:var(--r);overflow:hidden;min-width:0;align-self:start;height:calc(100% - var(--capH));transition:background .3s,opacity .35s,filter .35s}
@@ -107,7 +107,7 @@ a{color:inherit}
 .go{position:absolute;right:15px;top:12px;z-index:5;color:var(--ink3);font-size:15px;transition:color .2s,transform .3s}
 a.tile:hover .go{color:var(--ink);transform:translate(2px,-2px)}
 a.tile{display:block;text-decoration:none;color:inherit}
-#feature{grid-area:feature} #f2{grid-area:f2} #f3{grid-area:f3} #np{grid-area:np} #blink{grid-area:blink}
+#feature{grid-area:feature} #f2{grid-area:f2} #f3{grid-area:f3} #f4{grid-area:f4} #np{grid-area:np} #blink{grid-area:blink}
 #walls{grid-area:walls;cursor:zoom-in} #pace{grid-area:pace} #msg{grid-area:msg}
 
 /* films: one tile per serene.aiart piece, each shown once */
@@ -325,9 +325,9 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   body{padding-inline:16px}
   :root{--gap:10px;--r:16px}
   /* phones: the three films side by side as portrait cards, everything else in short full-width rows */
-  .grid{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:auto;
-    grid-template-rows:calc((100cqi - 2 * var(--gap)) / 3 * 1.62 + var(--gap)) calc(156px + var(--capH)) calc(124px + var(--capH)) calc(150px + var(--capH)) calc(140px + var(--capH));
-    grid-template-areas:"feature feature f2 f2 f3 f3" "np np np np np np" "pace pace pace blink blink blink" "walls walls walls walls walls walls" "msg msg msg msg msg msg"}
+  .grid{grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:auto;
+    grid-template-rows:calc((100cqi - 3 * var(--gap)) / 4 * 1.62 + var(--gap)) calc(156px + var(--capH)) calc(124px + var(--capH)) calc(150px + var(--capH)) calc(140px + var(--capH));
+    grid-template-areas:"feature feature feature f2 f2 f2 f3 f3 f3 f4 f4 f4" "np np np np np np np np np np np np" "pace pace pace pace pace pace blink blink blink blink blink blink" "walls walls walls walls walls walls walls walls walls walls walls walls" "msg msg msg msg msg msg msg msg msg msg msg msg"}
   .grid .film{height:calc(100% - var(--gap))}
   .film .fn{left:8px;bottom:8px}
   .np{padding:12px 16px;gap:4px}
@@ -348,7 +348,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
     <canvas class="planet" id="planet" aria-label="A tiny planet. Drag to spin it, tap to switch day and night." role="img"></canvas>
     <h1>Hey, I'm <b>Lyn</b>.</h1>
     <p class="statement">I run <a class="hot" href="https://www.instagram.com/serene.aiart/" target="_blank" rel="noopener">serene.aiart</a>, where I make <span class="hot w-fog">dreamlike</span> short <span class="hot w-blink" data-split>films</span> with AI.</p>
-    <div class="last mono">latest <button id="latest">There are versions of you still wandering abandoned dreams.</button></div>
+    <div class="last mono">latest <button id="latest">You can wake up anytime you want. You just haven’t wanted to.</button></div>
     <div class="socials">
       <a class="ig" href="https://www.instagram.com/serene.aiart/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r=".9" fill="currentColor" stroke="none"/></svg>@serene.aiart<span>↗</span></a>
       <a class="ig" href="https://www.tiktok.com/@serene.aix" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 3.5v11.25a3.75 3.75 0 1 1-3.75-3.75"/><path d="M13.5 3.5c.5 2.6 2.4 4.4 5 4.6"/></svg>@serene.aix<span>↗</span></a>
@@ -365,6 +365,9 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
       </article>
       <article class="tile film" id="f3" data-i="2" tabindex="0" role="button" aria-label="Watch: Reality has a habit of blinking. Don’t. Blink.">
         <canvas class="full"></canvas><span class="fn">03</span>
+      </article>
+      <article class="tile film" id="f4" data-i="3" tabindex="0" role="button" aria-label="Watch: You can wake up anytime you want. You just haven’t wanted to.">
+        <canvas class="full"></canvas><span class="fn">04</span>
       </article>
       <article class="tile" id="np" aria-label="Now playing">
         <div class="np">
@@ -538,7 +541,8 @@ const planet=scene(planetC,planetC,(c,w,h,t,dt,S)=>{const st=S.st;
 const ART=[
   {title:'There are versions of you still wandering abandoned dreams.',src:'art/01.mp4',link:'https://www.instagram.com/serene.aiart/reel/DbrjwmsM5Qv/',audio:'',g:['#f3e7d9','#c9b6e2','#6f86b8',.32,.25]},
   {title:'The sky forgot where it ends.',src:'art/02.mp4',link:'https://www.instagram.com/serene.aiart/reel/DaUaCnjs3_P/',audio:'',g:['#fde6d6','#ee9f8c','#6e4f72',.7,.3]},
-  {title:'Reality has a habit of blinking. Don\'t. Blink.',src:'art/03.mp4',link:'https://www.instagram.com/serene.aiart/reel/DaR6aOkvdQ-/',audio:'',g:['#eef6ec','#9fc7b4','#45685f',.4,.72]}];
+  {title:'Reality has a habit of blinking. Don\'t. Blink.',src:'art/03.mp4',link:'https://www.instagram.com/serene.aiart/reel/DaR6aOkvdQ-/',audio:'',g:['#eef6ec','#9fc7b4','#45685f',.4,.72]},
+  {title:'You can wake up anytime you want. You just haven’t wanted to.',src:'art/04.mp4',link:'https://www.instagram.com/serene.aiart/reel/DelOyzysV97/',audio:'',g:['#e8eefb','#b7c4ea','#5b6a9a',.5,.4]}];
 const isVid=a=>/\.(mp4|webm|mov)(\?|$)/i.test(a.src);
 const phCss=a=>`radial-gradient(120% 100% at ${a.g[3]*100}% ${a.g[4]*100}%,${a.g[0]} 0%,${a.g[1]} 45%,${a.g[2]} 100%)`;
 function mkVideo(src,controls){const v=document.createElement('video');v.src=src;v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.preload='auto';if(controls)v.controls=true;return v}
@@ -566,7 +570,7 @@ addEventListener('keydown',e=>{if(lb.hidden)return;if(e.key==='Escape')closeLb()
 {let sx=null;lb.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')sx=e.clientX});lb.addEventListener('pointerup',e=>{if(sx==null)return;const dx=e.clientX-sx;sx=null;if(Math.abs(dx)>50)showLb(lbI+(dx<0?1:-1))})}
 
 /* ---------- film tiles ---------- */
-const dur=i=>{const m=media[i];return m&&isFinite(m.duration)&&m.duration>0?m.duration:[18.1,14.1,15.2][i]||15};
+const dur=i=>{const m=media[i];return m&&isFinite(m.duration)&&m.duration>0?m.duration:[18.1,14.1,15.2,15.2][i]||15};
 const totalDur=()=>ART.reduce((t,_,i)=>t+dur(i),0);
 const mmss=t=>pad2(Math.floor(t/60))+':'+pad2(Math.floor(t%60));
 function seek(m,t){if(!m)return;if(m.seeking){m._pend=t;return}m.currentTime=t}
@@ -587,11 +591,11 @@ function drawFilm(F){const[w,h,dpr]=fit(F.cv),c=F.cv.getContext('2d');F.rv=lerp(
   if(F.rv<.995){const o=dith1(F,w,h,x=>paintSrc(x,F.i,w,h));if(o){c.imageSmoothingEnabled=false;c.drawImage(o,0,0,F.cv.width,F.cv.height)}}
   if(F.rv>.005){c.imageSmoothingEnabled=true;c.globalAlpha=F.rv;c.setTransform(dpr,0,0,dpr,0,0);paintSrc(c,F.i,w,h);c.globalAlpha=1}}
 $$('.film').forEach(t=>{const i=+t.dataset.i;filmTile(t,i,drawFilm);tap(t,()=>openLb(i,t))});
-tap($('#latest'),()=>openLb(0,$('#feature')));
+tap($('#latest'),()=>openLb(3,$('#f4')));
 
 // now playing: the caption of the current film, its sound, and a scrubber across all films
 const npText=$('#npText'),npNum=$('#npNum'),npTl=$('#npTl'),npHead=$('#npHead'),npSnd=$('#npSnd');let npT0=0;
-const segs=ART.map((a,i)=>{const d=document.createElement('div');d.className='np-seg';d.innerHTML='<span></span>';d.firstChild.textContent=pad2(i+1);npTl.insertBefore(d,npHead);return d});
+const segs=ART.map((a,i)=>{const d=document.createElement('div');d.className='np-seg';d.innerHTML='<span></span>';d.firstChild.textContent=pad2(i+1);d.style.flex=String(dur(i));npTl.insertBefore(d,npHead);return d});
 function npStart(){npT0=performance.now();npNum.textContent='now playing · '+pad2(reelI+1);const c=credit(ART[reelI]);$('#npAudio').textContent=c;$('#npAudio').hidden=!c;
   segs.forEach((d,i)=>d.classList.toggle('on',i===reelI));$$('.film').forEach(t=>t.classList.toggle('playing',+t.dataset.i===reelI))}
 function npTick(){const t=ART[reelI].title,n=RM?t.length:Math.min(t.length,Math.floor((performance.now()-npT0)/48*PACE));if(npText.textContent.length!==n)npText.textContent=t.slice(0,n);
@@ -641,7 +645,7 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
 // Everything lives in this closure: nothing here can be called from outside, and editing
 // only starts after a token has been checked with GitHub on this visit.
 (function(){
-  const DEF={feature:[0,0,2,2],f2:[2,0,1,2],f3:[3,0,1,2],np:[0,2,2,1],pace:[2,2,1,1],blink:[3,2,1,1],walls:[0,3,2,1],msg:[2,3,2,1]};
+  const DEF={feature:[0,0,1,2],f2:[1,0,1,2],f3:[2,0,1,2],f4:[3,0,1,2],np:[0,2,2,1],pace:[2,2,1,1],blink:[3,2,1,1],walls:[0,3,2,1],msg:[2,3,2,1]};
   // any size from 1x1 up to 4 wide x 3 tall; a few tiles need at least 2 columns for their contents
   const MINW={np:2,walls:2,msg:2},MAXH=3,minW=id=>MINW[id]||1;
   const REPO='InitialPhantom/bento-2nd-website-serene',FILE='layout.json',BRANCH='main',COLS=4;
