@@ -734,7 +734,7 @@ msgT.addEventListener('click',e=>{if(!e.target.closest('#compose'))msgPop.show()
 
 /* ---------- wallpapers: stills from the films, dithered in the tile, full colour in the window ---------- */
 // files are art/wallpapers/01.webp … NN.webp; raise WALL_N when adding more. The tile previews the first TILE_N.
-const WALL_N=18,TILE_N=7;
+const WALL_N=21,TILE_N=7;
 const WALLS=Array.from({length:WALL_N},(_,i)=>{const n=pad2(i+1);return{n,src:'art/wallpapers/'+n+'.webp',img:null,dz:null}});
 WALLS.slice(0,TILE_N).forEach(p=>{p.img=new Image();p.img.decoding='async';p.img.src=p.src});
 $('#wallCount').textContent=pad2(WALL_N);
