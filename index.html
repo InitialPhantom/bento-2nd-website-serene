@@ -193,7 +193,8 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .lb-prev{left:20px}.lb-next{right:20px}
 .lb-btn[disabled]{opacity:0;pointer-events:none}
 @media (max-width:640px){
-  .msg-win .wp-files{grid-template-columns:repeat(3,minmax(0,1fr));padding:4px 14px 20px;gap:8px 4px}
+  .msg-win .wp-files{padding:4px 14px 20px}
+  .msg-win .wp-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 4px}
   .msg-win .wp-file{padding:6px}
   .msg-win .wp-btn{width:36px;height:36px;margin-top:-18px}
   .lb .lb-prev,.lb .lb-next{display:none}
@@ -236,10 +237,11 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .msg-win.big .compose{left:18px;right:18px;bottom:18px}
 
 /* wallpapers window: square files first; picking one zooms it into a gliding viewer */
-.wp-files{position:absolute;top:58px;left:0;right:0;bottom:0;overflow-y:auto;padding:6px 22px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px 10px;align-content:start;
+.wp-files{position:absolute;top:58px;left:0;right:0;bottom:0;overflow-y:auto;padding:6px 22px 24px;display:flex;flex-direction:column;
   scrollbar-width:thin;opacity:0;transition:opacity .2s,filter .4s ease,transform .4s cubic-bezier(.2,.9,.25,1)}
 .msg-win.big .wp-files{opacity:1;transition:opacity .3s .2s,filter .4s ease,transform .4s cubic-bezier(.2,.9,.25,1)}
 .msg-win.viewing .wp-files{opacity:0;filter:blur(12px);transform:scale(.96);pointer-events:none;transition:opacity .3s,filter .4s ease,transform .4s cubic-bezier(.2,.9,.25,1)}
+.wp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px 10px;align-content:start}
 .wp-file{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px;border-radius:12px;transition:background .2s}
 .wp-file:hover,.wp-file:focus-visible{background:color-mix(in srgb,var(--accent) 9%,transparent)}
 .wp-file img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.08),0 10px 20px -14px rgba(0,0,0,.35);transition:transform .3s cubic-bezier(.2,.9,.25,1)}
@@ -254,7 +256,7 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .wp-dl{height:32px;padding:0 14px;border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:color .2s}
 .wp-dl:hover{color:var(--accent)}
 .wp-dl svg{width:13px;height:13px}
-.wp-note{grid-column:1 / -1;justify-self:end;margin:34px 0 -6px;font-family:var(--f-mono);font-size:12px;color:var(--ink3)}
+.wp-note{flex:none;align-self:flex-end;margin:auto 0 -6px;padding-top:34px;font-family:var(--f-mono);font-size:12px;color:var(--ink3)}
 .wp-btn{position:absolute;top:calc(50% + 8px);z-index:3;width:42px;height:42px;margin-top:-21px;border-radius:50%;background:var(--paper);color:var(--ink);display:grid;place-items:center;
   box-shadow:0 1px 2px rgba(0,0,0,.1),0 10px 22px -10px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s,transform .15s}
 .wp-btn svg{width:17px;height:17px}
@@ -764,19 +766,19 @@ const mk=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className
 const WN=WALLS.length;let wpMode='files';
 const wallPop=popout(wallT,'Wallpapers',centred(1240,860),{after:()=>{if(wpMode==='view')wpReset()}});
 const wpWin=wallPop.win,wpHead=wpWin.querySelector('.msg-head');
-const wpFiles=mk('div','wp-files'),wpView=mk('div','wp-view'),wpTrack=mk('div','wp-track'),wpCount=mk('span','wp-count');
+const wpFiles=mk('div','wp-files'),wpGrid=mk('div','wp-grid'),wpView=mk('div','wp-view'),wpTrack=mk('div','wp-track'),wpCount=mk('span','wp-count');
 const wpBack=mk('button','wp-back',ARROW('M15 6l-6 6 6 6')+'All'),wpPrev=mk('button','wp-btn prev',ARROW('M15 6l-6 6 6 6')),wpNext=mk('button','wp-btn next',ARROW('M9 6l6 6-6 6'));
 wpBack.type=wpPrev.type=wpNext.type='button';wpBack.setAttribute('aria-label','Back to all wallpapers');wpPrev.setAttribute('aria-label','Previous wallpaper');wpNext.setAttribute('aria-label','Next wallpaper');
 wpHead.insertBefore(wpBack,wpHead.firstChild);wpHead.insertBefore(wpCount,wpHead.querySelector('.msg-x'));
 // files: square icons with a file name, like a folder
 const fileImgs=WALLS.map((p,i)=>{const b=mk('button','wp-file');b.type='button';b.setAttribute('aria-label','Open wallpaper '+(i+1));
   const im=mk('img');im.src='art/wallpapers/thumbs/'+p.n+'.webp'+WALL_V;im.alt='';im.loading='lazy';im.decoding='async';const nm=mk('span');nm.textContent='wallpaper-'+p.n;
-  b.append(im,nm);b.addEventListener('click',()=>wpOpen(i));wpFiles.appendChild(b);return im});
+  b.append(im,nm);b.addEventListener('click',()=>wpOpen(i));wpGrid.appendChild(b);return im});
 // viewer: every wallpaper in a row that glides on a spring
 const wpItems=WALLS.map((p,i)=>{const f=mk('figure','wp-item'),im=mk('img');im.src=p.src;im.alt='serene.aiart wallpaper '+(i+1);im.loading='lazy';im.decoding='async';im.draggable=false;
   const a=mk('a','wp-dl',DL_SVG+'Download');a.href='art/wallpapers/jpg/'+p.n+'.jpg'+WALL_V;a.download='serene wallpaper '+(i+1)+'.jpg';f.append(im,a);wpTrack.appendChild(f);return f});
 const wpNote=mk('p','wp-note');wpNote.textContent='© serene.ai';
-wpView.appendChild(wpTrack);wpFiles.appendChild(wpNote);wpWin.append(wpFiles,wpView,wpPrev,wpNext);
+wpView.appendChild(wpTrack);wpFiles.append(wpGrid,wpNote);wpWin.append(wpFiles,wpView,wpPrev,wpNext);
 const blurN=document.getElementById('wpblurN');
 let wpPos=0,wpTgt=0,wpVel=0,wpIW=300,wpGap=20,wpRun=false,wpLast=0,wpDrag=null;
 const wpStep=()=>wpIW+wpGap;
