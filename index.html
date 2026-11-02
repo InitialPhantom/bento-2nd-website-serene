@@ -306,7 +306,7 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .foot .ctl button:hover{color:var(--ink)}
 .foot .ctl b{font-weight:400;color:var(--ink2)}
 .foot #footClock{justify-self:end}
-@media (max-width:640px){.foot{grid-template-columns:1fr;justify-items:start}.foot #footClock{justify-self:start}}
+@media (max-width:640px){.foot{grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:baseline}.foot #stay{grid-column:1 / -1}.foot .ctl{gap:14px}.foot #footClock{justify-self:end}}
 
 @media (max-width:1040px){
   .page{grid-template-columns:minmax(0,1fr);gap:44px}
@@ -336,7 +336,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   .compose input{font-size:16px}
   .cap{font-size:12.5px}
   .btn{height:34px;padding:0 14px;font-size:13px}
-  .foot{margin-top:56px;padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));font-size:12.5px}
+  .foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));font-size:12.5px}
   .foot .ctl button{min-height:36px}
   body{padding-inline:16px}
   :root{--gap:10px;--r:16px}
@@ -601,9 +601,12 @@ function dith1(F,w,h,paint){if(F.o.width!==w||F.o.height!==h){F.o.width=w;F.o.he
 const films=[];
 function filmTile(tile,i,draw){const F={tile,cv:tile.querySelector('canvas'),o:document.createElement('canvas'),i,rv:0,vis:true,hover:false,draw};
   new IntersectionObserver(es=>es.forEach(e=>F.vis=e.isIntersecting)).observe(tile);
-  tile.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')F.hover=true});tile.addEventListener('pointerleave',()=>F.hover=false);films.push(F);return F}
+  films.push(F);return F}
+// colour on hover only where a real hover exists; phones keep the sticky :hover from a tap, so they never get it
+const CAN_HOVER=matchMedia('(hover:hover) and (pointer:fine)');
+const hovered=el=>CAN_HOVER.matches&&el.matches(':hover');
 // a film tile: dithered, clearing to full colour on hover (or as far as the Clarity tile says)
-function drawFilm(F){const[w,h,dpr]=fit(F.cv),c=F.cv.getContext('2d');F.rv=lerp(F.rv,F.hover&&!editing()?1:0,.3);
+function drawFilm(F){const[w,h,dpr]=fit(F.cv),c=F.cv.getContext('2d');F.rv=lerp(F.rv,hovered(F.tile)&&!editing()?1:0,.3);
   c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;
   if(F.rv<.995){const o=dith1(F,w,h,x=>paintSrc(x,F.i,w,h));if(o){c.imageSmoothingEnabled=false;c.drawImage(o,0,0,F.cv.width,F.cv.height)}}
   if(F.rv>.005){c.imageSmoothingEnabled=true;c.globalAlpha=F.rv;c.setTransform(dpr,0,0,dpr,0,0);paintSrc(c,F.i,w,h);c.globalAlpha=1}}
@@ -815,8 +818,8 @@ function wallDither(p,w,h){if(p.dz&&p.dz.width===w&&p.dz.height===h&&p.dk===C.da
 const wallT=$('#walls'),shown=WALLS.slice(0,TILE_N);
 const walls=scene(wallT,$('#walls canvas'),(c,w,h,t,dt,S)=>{const st=S.st,n=shown.length,pad=14,ch=Math.max(10,Math.round(h-pad*2)),cw=Math.round(ch*9/16),gap=10;
   const step=Math.min(cw+gap,(w-pad*2-cw)/(n-1)),x0=(w-(step*(n-1)+cw))/2;
-  st.rv=lerp(st.rv,S.over&&!editing()?1:0,Math.min(1,dt*6+.02));
-  let hi=-1;if(S.over)for(let i=n-1;i>=0;i--){const x=x0+i*step;if(S.mx>=x&&S.mx<=x+cw){hi=i;break}}
+  const hov=hovered(wallT);st.rv=lerp(st.rv,hov&&!editing()?1:0,Math.min(1,dt*6+.02));
+  let hi=-1;if(hov)for(let i=n-1;i>=0;i--){const x=x0+i*step;if(S.mx>=x&&S.mx<=x+cw){hi=i;break}}
   const order=[...shown.keys()].filter(i=>i!==hi);if(hi>=0)order.push(hi);
   for(const i of order){const p=shown[i];p.lift=lerp(p.lift||0,i===hi?1:0,Math.min(1,dt*10+.02));const x=Math.round(x0+i*step),y=pad-p.lift*6;
     c.save();c.beginPath();c.roundRect(x,y,cw,ch,8);c.clip();c.fillStyle=C.paper;c.fillRect(x,y,cw,ch);
