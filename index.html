@@ -196,47 +196,6 @@ a.tile{display:block;text-decoration:none;color:inherit}
   .msg-win .wp-btn{width:36px;height:36px;margin-top:-18px}
   .lb .lb-prev,.lb .lb-next{display:none}
 }
-/* layout editor (owner only, unlocked with a GitHub token) */
-.grid.editing .tile{cursor:grab;touch-action:none;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent)}
-.grid.editing .tile:hover{transform:none}
-.grid.editing .tile > *:not(.ed-h){pointer-events:none}
-.grid.editing .cap{opacity:.45}
-.grid.editing .tile.ed-drag{cursor:grabbing;z-index:50;transition:none!important;box-shadow:0 0 0 1.5px var(--accent),0 28px 50px -22px rgba(0,0,0,.45)}
-.ed-ghost{border-radius:var(--r);background:color-mix(in srgb,var(--accent) 7%,transparent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 45%,transparent);pointer-events:none;align-self:start;height:calc(100% - var(--capH));transition:opacity .15s}
-.ed-h{position:absolute;z-index:30;display:none;touch-action:none}
-.grid.editing .ed-h{display:block}
-.ed-h[data-dir="n"],.ed-h[data-dir="s"]{left:22px;right:22px;height:14px;cursor:ns-resize}
-.ed-h[data-dir="n"]{top:0}.ed-h[data-dir="s"]{bottom:0}
-.ed-h[data-dir="e"],.ed-h[data-dir="w"]{top:22px;bottom:22px;width:14px;cursor:ew-resize}
-.ed-h[data-dir="e"]{right:0}.ed-h[data-dir="w"]{left:0}
-.ed-h[data-dir="nw"],.ed-h[data-dir="ne"],.ed-h[data-dir="sw"],.ed-h[data-dir="se"]{width:22px;height:22px}
-.ed-h[data-dir="nw"]{top:0;left:0;cursor:nwse-resize}.ed-h[data-dir="se"]{bottom:0;right:0;cursor:nwse-resize}
-.ed-h[data-dir="ne"]{top:0;right:0;cursor:nesw-resize}.ed-h[data-dir="sw"]{bottom:0;left:0;cursor:nesw-resize}
-.ed-h::after{content:"";position:absolute;background:var(--accent);border-radius:3px;opacity:.55;transition:opacity .15s,transform .15s}
-.ed-h[data-dir="n"]::after,.ed-h[data-dir="s"]::after{left:50%;width:30px;height:4px;margin-left:-15px;top:5px}
-.ed-h[data-dir="e"]::after,.ed-h[data-dir="w"]::after{top:50%;height:30px;width:4px;margin-top:-15px;left:5px}
-.ed-h[data-dir$="w"][data-dir^="n"]::after,.ed-h[data-dir="ne"]::after,.ed-h[data-dir="sw"]::after,.ed-h[data-dir="se"]::after{width:9px;height:9px;border-radius:50%;top:7px;left:7px}
-.ed-h:hover::after,.ed-h.on::after{opacity:1;transform:scale(1.25)}
-.grid.editing .tile.ed-size{z-index:40;box-shadow:0 0 0 2px var(--accent),0 20px 40px -20px rgba(0,0,0,.35)}
-.ed-bar{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));translate:-50% 0;z-index:400;display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px;background:var(--paper);box-shadow:0 0 0 1px var(--line),0 14px 30px -14px rgba(0,0,0,.35);font-size:13px}
-.ed-bar[hidden],.ed-modal[hidden]{display:none}
-.ed-bar .lbl{padding:0 10px 0 12px;color:var(--ink2);white-space:nowrap}
-.ed-bar button{height:34px;padding:0 14px;border-radius:999px;font-weight:500;color:var(--ink);white-space:nowrap}
-.ed-bar button:hover{background:var(--tile)}
-.ed-bar button.primary{background:var(--ink);color:var(--bg)}
-.ed-bar button.primary[disabled]{opacity:.35;pointer-events:none}
-.ed-msg{position:fixed;left:50%;bottom:calc(70px + env(safe-area-inset-bottom,0px));translate:-50% 0;z-index:400;font-size:12.5px;color:var(--ink2);background:var(--paper);padding:8px 14px;border-radius:14px;box-shadow:0 0 0 1px var(--line),0 10px 24px -14px rgba(0,0,0,.3);opacity:0;transition:opacity .25s;pointer-events:none;width:max-content;max-width:min(560px,90vw);text-align:center;line-height:1.45}
-.ed-msg.on{opacity:1}
-.ed-modal{position:fixed;inset:0;z-index:450;display:grid;place-items:center;background:var(--scrim);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:16px}
-.ed-card{width:min(420px,100%);background:var(--paper);border-radius:18px;padding:20px;box-shadow:0 0 0 1px var(--line),0 30px 60px -30px rgba(0,0,0,.4);display:grid;gap:12px}
-.ed-card h2{margin:0;font-size:16px;font-weight:600}
-.ed-card p{margin:0;font-size:13.5px;color:var(--ink2);line-height:1.55}
-.ed-card input{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:0 12px;font-family:var(--f-mono);font-size:13px;color:var(--ink);outline:none}
-.ed-card input:focus{border-color:var(--accent)}
-.ed-card .row{display:flex;gap:8px;justify-content:flex-end}
-.ed-card button{height:36px;padding:0 16px;border-radius:999px;font-weight:500}
-.ed-card button.primary{background:var(--ink);color:var(--bg)}
-.ed-card .err{color:#c2373b;font-size:12.5px;min-height:1em}
 /* message me */
 .chat{position:absolute;left:18px;right:18px;top:16px;bottom:74px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;overflow:hidden;transition:top .46s cubic-bezier(.2,.9,.25,1),left .46s cubic-bezier(.2,.9,.25,1),right .46s cubic-bezier(.2,.9,.25,1),bottom .46s cubic-bezier(.2,.9,.25,1)}
 .bubble{flex:none;max-width:82%;padding:9px 14px;border-radius:18px;font-size:13px;line-height:1.45;animation:bub .35s cubic-bezier(.3,1.4,.5,1)}
@@ -361,7 +320,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   .film .fn{left:8px;bottom:8px}
   #np .np{display:none}
   .np-mini{display:grid}
-  .cap[data-for="np"] span,.cap[data-for="pace"] span,.cap[data-for="walls"] span{display:none}
+  .cap[style*="grid-area:np"] span,.cap[style*="grid-area:pace"] span,.cap[style*="grid-area:walls"] span{display:none}
   .np-cap{font-size:16px}
   .dial{width:auto;height:62%}
   .paceval{display:none}
@@ -438,20 +397,6 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
 <div class="grain" aria-hidden="true"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><filter id="wpblur" x="-5%" y="0" width="110%" height="100%" color-interpolation-filters="sRGB"><feGaussianBlur id="wpblurN" stdDeviation="0 0"/></filter><filter id="lbblur" x="-5%" y="0" width="110%" height="100%" color-interpolation-filters="sRGB"><feGaussianBlur id="lbblurN" stdDeviation="0 0"/></filter></svg>
 <div class="vids" id="vids" aria-hidden="true"></div>
-<div class="ed-modal" id="edModal" hidden role="dialog" aria-modal="true" aria-labelledby="edTitle">
-  <form class="ed-card" id="edForm">
-    <h2 id="edTitle">Edit layout</h2>
-    <p>Paste a GitHub token that can write to <b>InitialPhantom/bento-2nd-website-serene</b>. It is checked with GitHub and kept only in this browser.</p>
-    <input id="edTok" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" aria-label="GitHub token">
-    <div class="err" id="edErr" aria-live="polite"></div>
-    <div class="row"><button type="button" id="edCancel">Cancel</button><button type="submit" class="primary" id="edGo">Unlock</button></div>
-  </form>
-</div>
-<div class="ed-bar" id="edBar" hidden role="toolbar" aria-label="Layout editor">
-  <span class="lbl">Drag to move · edges or corners to resize</span>
-  <button id="edReset">Reset</button><button id="edForget">Forget token</button><button id="edDone">Cancel</button><button class="primary" id="edSave">Save</button>
-</div>
-<div class="ed-msg" id="edMsg" aria-live="polite"></div>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Artwork viewer">
   <button class="lb-btn lb-x" id="lbX" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous piece"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -471,7 +416,7 @@ const TAU=Math.PI*2,RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const lerp=(a,b,k)=>a+(b-a)*k,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:v}catch{return d}},set(k,v){try{localStorage.setItem(k,v)}catch{}}};
-const isDark=()=>document.documentElement.dataset.theme==='dark',editing=()=>!!document.querySelector('.grid.editing');
+const isDark=()=>document.documentElement.dataset.theme==='dark';
 let C={};
 function readC(){const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue(n).trim();C={ink:g('--ink'),ink2:g('--ink2'),ink3:g('--ink3'),accent:g('--accent'),dither:g('--dither'),paper:g('--paper'),tile:g('--tile'),dark:isDark()}}
 function hex(h){h=h.replace('#','');if(h.length===3)h=[...h].map(x=>x+x).join('');const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255]}
@@ -539,7 +484,7 @@ let T=1.3,last=performance.now();
 function paint(S,dt){const c=S.ctx;c.setTransform(S.dpr,0,0,S.dpr,0,0);c.clearRect(0,0,S.w,S.h);c.save();S.draw(c,S.w,S.h,T,dt,S);c.restore()}
 const MINF=matchMedia('(pointer:coarse)').matches?1/31:0;
 function loop(now){if(MINF&&(now-last)/1000<MINF){requestAnimationFrame(loop);return}const raw=Math.min(.05,(now-last)/1000);last=now;const dt=raw*PACE;T+=dt;for(const S of scenes)if(S.vis)paint(S,dt);requestAnimationFrame(loop)}
-const tap=(el,fn)=>{el.addEventListener('click',e=>{if(!editing())fn(e)});el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===el){e.preventDefault();fn(null)}})};
+const tap=(el,fn)=>{el.addEventListener('click',fn);el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===el){e.preventDefault();fn(null)}})};
 const local=(S,e)=>{if(!e)return[S.w/2,S.h/2];const r=S.c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
 
 /* ---------- planet ---------- */
@@ -614,7 +559,7 @@ function lbTick(now){const dt=Math.min(.05,(now-lbLast)/1000||.016);lbLast=now;
   lbRender();requestAnimationFrame(lbTick)}
 function lbKick(){if(lbRun)return;lbRun=true;lbLast=performance.now();requestAnimationFrame(lbTick)}
 function lbTo(i){const t=clamp(Math.round(i),0,ART.length-1);if(t!==lbTgt)ping(2+t*2,.04);lbTgt=t;if(RM){lbPos=lbTgt;lbVel=0;lbRender()}else lbKick()}
-function openLb(i,from){if(editing())return;lbFrom=from;media.forEach(m=>m&&m.tagName==='VIDEO'&&m.pause());lb.hidden=false;document.documentElement.style.overflow='hidden';
+function openLb(i,from){lbFrom=from;media.forEach(m=>m&&m.tagName==='VIDEO'&&m.pause());lb.hidden=false;document.documentElement.style.overflow='hidden';
   lbLayout();lbPos=lbTgt=i;lbVel=0;lbI=-1;lbRender();requestAnimationFrame(()=>requestAnimationFrame(()=>lb.classList.add('open')));$('#lbX').focus({preventScroll:true});ping(4,.05);log('you opened '+ART[i].title.toLowerCase(),'art'+i)}
 function closeLb(){lbItems.forEach((_,i)=>lbVid(i)?.pause());lb.classList.remove('open');document.documentElement.style.overflow='';setTimeout(()=>{lb.hidden=true;syncPlay();lbFrom?.focus({preventScroll:true})},RM?0:280)}
 $('#lbX').addEventListener('click',closeLb);
@@ -655,7 +600,7 @@ function filmTile(tile,i,draw){const F={tile,cv:tile.querySelector('canvas'),o:d
 const CAN_HOVER=matchMedia('(hover:hover) and (pointer:fine)');
 const hovered=el=>CAN_HOVER.matches&&el.matches(':hover');
 // a film tile: dithered, clearing to full colour on hover (or as far as the Clarity tile says)
-function drawFilm(F){const[w,h,dpr]=fit(F.cv),c=F.cv.getContext('2d');F.rv=lerp(F.rv,hovered(F.tile)&&!editing()?1:0,.3);
+function drawFilm(F){const[w,h,dpr]=fit(F.cv),c=F.cv.getContext('2d');F.rv=lerp(F.rv,hovered(F.tile)?1:0,.3);
   c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;
   if(F.rv<.995){const o=dith1(F,w,h,x=>paintSrc(x,F.i,w,h));if(o){c.imageSmoothingEnabled=false;c.drawImage(o,0,0,F.cv.width,F.cv.height)}}
   if(F.rv>.005){c.imageSmoothingEnabled=true;c.globalAlpha=F.rv;c.setTransform(dpr,0,0,dpr,0,0);paintSrc(c,F.i,w,h);c.globalAlpha=1}}
@@ -677,13 +622,13 @@ function scrubAt(x){let i=segs.length-1;for(let k=0;k<segs.length;k++){const d=s
   if(i!==reelI){const old=media[reelI];setReel(i,true);if(old&&lb.hidden)old.play().catch(()=>{})}const m=media[i];if(!m)return;m.pause();seek(m,Math.min(t,dur(i)-.05));reelLastT=t}
 {let on=false;const x=e=>e.clientX-npTl.getBoundingClientRect().left;
   const end=()=>{if(!on)return;on=false;reelDrag=false;const m=media[reelI];if(m){reelLastT=m.currentTime;if(lb.hidden)m.play().catch(()=>{})}log('you scrubbed through the films','scrub')};
-  npTl.addEventListener('pointerdown',e=>{if(editing())return;on=true;reelDrag=true;npTl.setPointerCapture(e.pointerId);scrubAt(x(e))});
+  npTl.addEventListener('pointerdown',e=>{on=true;reelDrag=true;npTl.setPointerCapture(e.pointerId);scrubAt(x(e))});
   npTl.addEventListener('pointermove',e=>{if(on)scrubAt(x(e))});npTl.addEventListener('pointerup',end);npTl.addEventListener('pointercancel',end);
   npTl.addEventListener('keydown',e=>{const d={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];if(!d)return;e.preventDefault();const m=media[reelI];if(!m)return;const t=m.currentTime+d*2;
     if(t<0&&reelI>0)setReel(reelI-1,true);else if(t>dur(reelI))setReel((reelI+1)%ART.length);else seek(m,Math.max(0,t))})}
 tap($('#npOpen'),()=>openLb(reelI,$('#npOpen')));
 const npRing=$('#npRing');$('#npMini').addEventListener('click',()=>npSnd.click());
-npSnd.addEventListener('click',()=>{if(editing())return;if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}listenOn=!listenOn;applyListen();if(listenOn){const m=media[reelI];m&&m.play().catch(()=>{})}log(listenOn?'you turned the film sound on':'you muted the films','listen')});
+npSnd.addEventListener('click',()=>{if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}listenOn=!listenOn;applyListen();if(listenOn){const m=media[reelI];m&&m.play().catch(()=>{})}log(listenOn?'you turned the film sound on':'you muted the films','listen')});
 
 // lights on/out: an eyeball in the middle of its tile that watches the cursor; clicking it switches the page between light and dark
 let GX=-1e4,GY=-1e4;addEventListener('pointermove',e=>{GX=e.clientX;GY=e.clientY},{passive:true});
@@ -710,105 +655,6 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
 {let last=0;(function tick(now){requestAnimationFrame(tick);if(now-last<66||!document.getElementById('lb').hidden)return;last=now;
   for(const m of media)if(m&&m.tagName==='VIDEO'&&m.playbackRate!==PACE)m.playbackRate=PACE;
   reelTrack();npTick();for(const F of films)if(F.vis)F.draw(F)})(0)}
-
-/* ---------- layout: optional layout.json + owner-only editor ---------- */
-// Desktop/tablet arrangement on a 4-column grid; phones keep the built-in stacked order.
-// Everything lives in this closure: nothing here can be called from outside, and editing
-// only starts after a token has been checked with GitHub on this visit.
-(function(){
-  const DEF={feature:[0,0,1,2],f2:[1,0,1,2],f3:[2,0,1,2],f4:[3,0,1,2],np:[0,2,2,1],pace:[2,2,1,1],blink:[3,2,1,1],walls:[0,3,2,1],msg:[2,3,2,1]};
-  // any size from 1x1 up to 4 wide x 3 tall; a few tiles need at least 2 columns for their contents
-  const MINW={np:2,walls:2,msg:2},MAXH=3,minW=id=>MINW[id]||1;
-  const REPO='InitialPhantom/bento-2nd-website-serene',FILE='layout.json',BRANCH='main',COLS=4;
-  const grid=document.querySelector('.grid'),wide=matchMedia('(min-width:641px)'),ids=Object.keys(DEF);
-  const capOf=id=>document.querySelector(`.cap[data-for="${id}"]`);
-  document.querySelectorAll('.cap').forEach(c=>{const m=(c.getAttribute('style')||'').match(/grid-area:\s*([\w-]+)/);if(m)c.dataset.for=m[1]});
-  const copy=L=>Object.fromEntries(Object.entries(L).map(([k,v])=>[k,[...v]]));
-  const hit=(a,b)=>a[0]<b[0]+b[2]&&b[0]<a[0]+a[2]&&a[1]<b[1]+b[3]&&b[1]<a[1]+a[3];
-  // no-overlap reflow: the moved tile keeps its spot, others are pushed down, then everything floats up to close gaps
-  function resolve(L,fixed){const out={},order=ids.filter(i=>L[i]).sort((p,q)=>(p===fixed?-1:q===fixed?1:0)||L[p][1]-L[q][1]||L[p][0]-L[q][0]);
-    for(const id of order){const v=[...L[id]];v[2]=Math.min(v[2],COLS);v[0]=clamp(v[0],0,COLS-v[2]);v[1]=Math.max(0,v[1]);if(id!==fixed)while(Object.values(out).some(o=>hit(o,v)))v[1]++;out[id]=v}
-    const up=o=>{const done={};if(fixed&&o[fixed])done[fixed]=o[fixed];for(const id of Object.keys(o).filter(i=>i!==fixed).sort((p,q)=>o[p][1]-o[q][1]||o[p][0]-o[q][0])){const v=o[id];while(v[1]>0){v[1]--;if(Object.values(done).some(x=>hit(x,v))){v[1]++;break}}done[id]=v}return done};
-    let done=up(out);
-    // close holes: move the next tile below that fits into each gap, then float everything up again
-    for(let pass=0;pass<40;pass++){const occ=new Set();let maxR=0;for(const v of Object.values(done)){maxR=Math.max(maxR,v[1]+v[3]);for(let x=v[0];x<v[0]+v[2];x++)for(let y=v[1];y<v[1]+v[3];y++)occ.add(x+','+y)}
-      let moved=false;
-      scan:for(let y=0;y<maxR;y++)for(let x=0;x<COLS;x++){if(occ.has(x+','+y))continue;let gw=0;while(x+gw<COLS&&!occ.has((x+gw)+','+y))gw++;
-        const cand=Object.keys(done).filter(id=>id!==fixed&&done[id][2]<=gw&&(done[id][1]>y||(done[id][1]===y&&done[id][0]>x))).sort((p,q)=>(done[q][2]*done[q][3]-done[p][2]*done[p][3])||done[p][1]-done[q][1]||done[p][0]-done[q][0]);
-        for(const id of cand){const v=[x,y,done[id][2],done[id][3]];if(Object.entries(done).some(([k,o])=>k!==id&&hit(o,v)))continue;done[id]=v;done=up(done);moved=true;break scan}}
-      if(!moved)break}
-    return done}
-  // final tidy: every tile, in reading order, takes the first free spot that fits (closes gaps)
-  function pack(L){const order=ids.filter(i=>L[i]).sort((p,q)=>L[p][1]-L[q][1]||L[p][0]-L[q][0]),occ=new Set(),out={};
-    for(const id of order){const w=Math.min(L[id][2],COLS),h=L[id][3];let done=false;
-      for(let y=0;!done&&y<200;y++)for(let x=0;x<=COLS-w&&!done;x++){let ok=true;for(let i=x;i<x+w&&ok;i++)for(let j=y;j<y+h;j++)if(occ.has(i+','+j)){ok=false;break}
-        if(ok){out[id]=[x,y,w,h];for(let i=x;i<x+w;i++)for(let j=y;j<y+h;j++)occ.add(i+','+j);done=true}}}
-    return out}
-  let L=null;
-  function area(v){return `${v[1]+1} / ${v[0]+1} / span ${v[3]} / span ${v[2]}`}
-  function place(id,v){const el=document.getElementById(id),cap=capOf(id);if(!el)return;if(v&&wide.matches){el.style.gridArea=area(v);if(cap)cap.style.gridArea=area(v)}else{el.style.gridArea='';if(cap)cap.style.gridArea=id}}
-  function apply(next){L=next;for(const id of ids)place(id,L?L[id]:null)}
-  // smooth moves: measure, change the layout, then animate each tile from where it was
-  function flip(next,skip){const els=ids.flatMap(id=>[document.getElementById(id),capOf(id)]).filter(Boolean),first=new Map(els.map(e=>[e,e.getBoundingClientRect()]));apply(next);
-    for(const e of els){if(e.id===skip)continue;const a=first.get(e),b=e.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top;if(!dx&&!dy)continue;
-      e.style.transition='none';e.style.transform=`translate(${dx}px,${dy}px)`;requestAnimationFrame(()=>{e.style.transition='transform .32s cubic-bezier(.2,.9,.25,1)';e.style.transform='';setTimeout(()=>{e.style.transition=''},340)})}}
-  wide.addEventListener('change',()=>apply(L));
-  fetch(FILE,{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(!j||!j.tiles)return;const T={};for(const id of ids){const t=j.tiles[id];T[id]=t?[t.col-1,t.row-1,t.w,t.h]:[...DEF[id]]}apply(pack(resolve(T)))}).catch(()=>{});
-
-  if(!(new URLSearchParams(location.search).has('edit')||location.hash==='#edit'))return; // editor only exists on ?edit
-
-  const $q=s=>document.querySelector(s),msg=$q('#edMsg');
-  function say(t,ms=2600){msg.textContent=t;msg.classList.add('on');clearTimeout(msg._t);msg._t=setTimeout(()=>msg.classList.remove('on'),ms)}
-  const tokGet=()=>{try{return localStorage.getItem('lyn-gh-token')||''}catch{return ''}},tokSet=v=>{try{v?localStorage.setItem('lyn-gh-token',v):localStorage.removeItem('lyn-gh-token')}catch{}};
-  const gh=(path,opt={})=>fetch('https://api.github.com'+path,{...opt,headers:{Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',Authorization:'Bearer '+tokGet(),...(opt.body?{'Content-Type':'application/json'}:{})}});
-  async function canWrite(){try{const r=await gh('/repos/'+REPO);if(!r.ok)return r.status===401?"GitHub rejected that token. It may be mistyped or expired.":r.status===404?"GitHub can’t see the repo with this token. Edit the token so Repository access includes bento-2nd-website-serene, with Contents set to Read and write.":"GitHub said "+r.status+" for this repo.";const j=await r.json();return j.permissions&&j.permissions.push?true:"This token can read the repo but can’t write to it."}catch{return "Couldn’t reach GitHub from this page. Open the site from its real address (not the Claude preview) and try again."}}
-  let unlocked=false,backup=null,ghost=null;
-  async function open(){if(!wide.matches){say('Layout editing needs a wider screen.');return}
-    if(tokGet()){const ok=await canWrite();if(ok===true){unlocked=true;start();return}tokSet('');$q('#edErr').textContent=ok}
-    $q('#edModal').hidden=false;$q('#edTok').value='';setTimeout(()=>$q('#edTok').focus(),30)}
-  $q('#edCancel').addEventListener('click',()=>{$q('#edModal').hidden=true;$q('#edErr').textContent=''});
-  $q('#edForm').addEventListener('submit',async e=>{e.preventDefault();const v=$q('#edTok').value.trim();if(!v)return;$q('#edGo').disabled=true;$q('#edErr').textContent='Checking with GitHub…';tokSet(v);
-    const ok=await canWrite();$q('#edGo').disabled=false;$q('#edTok').value='';if(ok===true){unlocked=true;$q('#edErr').textContent='';$q('#edModal').hidden=true;start()}else{tokSet('');$q('#edErr').textContent=ok}});
-  const tiles=ids.map(id=>document.getElementById(id)).filter(Boolean);
-  function start(){if(!unlocked)return;backup=copy(L||DEF);apply(resolve(copy(L||DEF)));
-    tiles.forEach(t=>{if(t.querySelector('.ed-h'))return;for(const dir of['n','s','e','w','nw','ne','sw','se']){const h=document.createElement('span');h.className='ed-h';h.dataset.dir=dir;h.setAttribute('aria-hidden','true');t.appendChild(h)}});
-    grid.classList.add('editing');$q('#edBar').hidden=false;say('Editing. Visitors don’t see this.')}
-  function stop(){grid.classList.remove('editing');$q('#edBar').hidden=true;ghost?.remove();ghost=null;tiles.forEach(t=>t.querySelectorAll('.ed-h').forEach(r=>r.remove()))}
-  function metrics(){const cs=getComputedStyle(grid),cg=parseFloat(cs.columnGap)||0,rg=parseFloat(cs.rowGap)||0,gr=grid.getBoundingClientRect(),cw=(gr.width-3*cg)/4,rh=parseFloat(cs.gridTemplateRows.split(' ')[0])||cw;return{gr,cx:cw+cg,ry:rh+rg}}
-  let d=null;
-  grid.addEventListener('pointerdown',e=>{if(!unlocked||!grid.classList.contains('editing'))return;const t=e.target.closest('.tile');if(!t||!L[t.id])return;e.preventDefault();
-    const m=metrics(),r=t.getBoundingClientRect();const dir=e.target.classList.contains('ed-h')?e.target.dataset.dir:'';if(dir){e.target.classList.add('on');t.classList.add('ed-size')}
-    d={id:t.id,el:t,dir,grip:dir?e.target:null,mode:dir?'size':'move',x:e.clientX,y:e.clientY,ox:r.left-m.gr.left,oy:r.top-m.gr.top,v:[...L[t.id]],m,last:L[t.id].join()};
-    if(d.mode==='move'){t.classList.add('ed-drag');ghost=document.createElement('div');ghost.className='ed-ghost';ghost.style.gridArea=area(L[t.id]);grid.appendChild(ghost)}
-    t.setPointerCapture?.(e.pointerId)});
-  addEventListener('pointermove',e=>{if(!d)return;const dx=e.clientX-d.x,dy=e.clientY-d.y;let nv=[...d.v];
-    if(d.mode==='move'){d.el.style.transform=`translate(${dx}px,${dy}px) scale(1.015)`;nv[0]=clamp(Math.round((d.ox+dx)/d.m.cx),0,COLS-nv[2]);nv[1]=Math.max(0,Math.round((d.oy+dy)/d.m.ry))}
-    else{const dc=Math.round(dx/d.m.cx),dr=Math.round(dy/d.m.ry),[x0,y0,w0,h0]=d.v,mw=minW(d.id);
-      if(d.dir.includes('e'))nv[2]=clamp(w0+dc,mw,COLS-x0);
-      if(d.dir.includes('w')){const nx=clamp(x0+dc,0,x0+w0-mw);nv[0]=nx;nv[2]=w0+(x0-nx)}
-      if(d.dir.includes('s'))nv[3]=clamp(h0+dr,1,MAXH);
-      if(d.dir.includes('n')){const ny=clamp(y0+dr,Math.max(0,y0+h0-MAXH),y0+h0-1);nv[1]=ny;nv[3]=h0+(y0-ny)}}
-    if(nv.join()===d.last)return;d.last=nv.join();const next=copy(L);next[d.id]=nv;const res=resolve(next,d.id);
-    if(d.mode==='move'){const target=res[d.id];flip(Object.assign(copy(res),{[d.id]:d.v}),d.id);L[d.id]=target;ghost.style.gridArea=area(target)}else flip(res)});
-  addEventListener('pointerup',()=>{if(!d)return;const t=d.el;d.grip?.classList.remove('on');t.classList.remove('ed-size');if(d.mode==='move'){const a=t.getBoundingClientRect();place(d.id,L[d.id]);t.classList.remove('ed-drag');const b=t.getBoundingClientRect();
-      t.style.transition='none';t.style.transform=`translate(${a.left-b.left}px,${a.top-b.top}px)`;requestAnimationFrame(()=>{t.style.transition='transform .3s cubic-bezier(.2,.9,.25,1)';t.style.transform='';setTimeout(()=>{t.style.transition=''},320)});ghost?.remove();ghost=null}
-    d=null;setTimeout(()=>flip(pack(L)),RM?0:60)});
-  $q('#edReset').addEventListener('click',()=>{flip(copy(DEF));say('Back to the default arrangement. Save to keep it.')});
-  $q('#edDone').addEventListener('click',()=>{flip(backup);stop();say('Changes discarded.')});
-  $q('#edForget').addEventListener('click',()=>{tokSet('');unlocked=false;flip(backup);stop();say('Token removed from this browser.')});
-  $q('#edSave').addEventListener('click',async()=>{if(!unlocked)return;const btn=$q('#edSave');btn.disabled=true;say('Saving to GitHub…',8000);
-    const out={};for(const id of ids){const[c,r,w,h]=L[id];out[id]={col:c+1,row:r+1,w,h}}const json=JSON.stringify({version:1,columns:COLS,tiles:out},null,2)+'\n';
-    try{let sha;const g=await gh(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);if(g.ok)sha=(await g.json()).sha;else if(g.status!==404){const e=new Error('read');e.status=g.status;e.gh=(await g.json().catch(()=>({}))).message||'';throw e}
-      const p=await gh(`/repos/${REPO}/contents/${FILE}`,{method:'PUT',body:JSON.stringify({message:'Update layout from the site editor',content:btoa(unescape(encodeURIComponent(json))),branch:BRANCH,...(sha?{sha}:{})})});
-      if(!p.ok){const e=new Error('write');e.status=p.status;e.gh=(await p.json().catch(()=>({}))).message||'';throw e}btn.disabled=false;stop();say('Saved to GitHub. Visitors see it once your host picks up the commit.',4200)}
-    catch(err){btn.disabled=false;const st=err.status,why=
-      st===403||st===404?'This token isn’t allowed to change files. In GitHub → Settings → Developer settings → Fine-grained tokens, set Repository permissions → Contents to “Read and write” (not Read-only), save, then reload with ?edit.':
-      st===401?'GitHub rejected the token. It may have expired; make a new one and reload with ?edit.':
-      st===409||st===422?'layout.json changed on GitHub while you were editing. Reload with ?edit and save again.':
-      !st?'Couldn’t reach GitHub. Check your connection and try again.':'GitHub refused the save.';
-      say(why+(st?' (GitHub '+st+(err.gh?': '+err.gh:'')+')':'')+' Nothing was changed.',14000)}});
-  setTimeout(open,400);
-})();
 
 /* ---------- message me (sent with FormSubmit, no server needed) ---------- */
 // Your email, or the random address FormSubmit gives you after you confirm the first message
@@ -843,7 +689,7 @@ function popout(tile,title,size,hooks={}){const ov=document.createElement('div')
   win.innerHTML='<div class="msg-head"><span></span><button class="msg-x" type="button" aria-label="Close">'+X_SVG+'</button></div>';win.querySelector('.msg-head span').textContent=title;
   ov.appendChild(win);document.body.appendChild(ov);
   const put=b=>{for(const k in b)win.style[k]=b[k]+'px'};
-  P.show=()=>{if(P.open||P.busy||editing())return;P.open=P.busy=true;const from=boxOf(tile);hooks.before?.();ov.hidden=false;win.style.transition='none';put(from);document.documentElement.style.overflow='hidden';
+  P.show=()=>{if(P.open||P.busy)return;P.open=P.busy=true;const from=boxOf(tile);hooks.before?.();ov.hidden=false;win.style.transition='none';put(from);document.documentElement.style.overflow='hidden';
     void win.offsetWidth;win.style.transition='';ov.classList.add('open');win.classList.add('big');put(size());setTimeout(()=>{P.busy=false;hooks.opened?.()},RM?0:480);ping(4,.05)};
   P.hide=()=>{if(!P.open||P.busy)return;P.busy=true;document.documentElement.style.overflow='';ov.classList.remove('open');win.classList.remove('big');put(boxOf(tile));
     setTimeout(()=>{hooks.after?.();ov.hidden=true;P.open=P.busy=false},RM?0:470)};
@@ -869,7 +715,7 @@ function wallDither(p,w,h){if(p.dz&&p.dz.width===w&&p.dz.height===h&&p.dk===C.da
 const wallT=$('#walls'),shown=WALLS.slice(0,TILE_N);
 const walls=scene(wallT,$('#walls canvas'),(c,w,h,t,dt,S)=>{const st=S.st,n=shown.length,pad=14,ch=Math.max(10,Math.round(h-pad*2)),cw=Math.round(ch*9/16),gap=10;
   const step=Math.min(cw+gap,(w-pad*2-cw)/(n-1)),x0=(w-(step*(n-1)+cw))/2;
-  const hov=hovered(wallT);st.rv=lerp(st.rv,hov&&!editing()?1:0,Math.min(1,dt*6+.02));
+  const hov=hovered(wallT);st.rv=lerp(st.rv,hov?1:0,Math.min(1,dt*6+.02));
   let hi=-1;if(hov)for(let i=n-1;i>=0;i--){const x=x0+i*step;if(S.mx>=x&&S.mx<=x+cw){hi=i;break}}
   const order=[...shown.keys()].filter(i=>i!==hi);if(hi>=0)order.push(hi);
   for(const i of order){const p=shown[i];p.lift=lerp(p.lift||0,i===hi?1:0,Math.min(1,dt*10+.02));const x=Math.round(x0+i*step),y=pad-p.lift*6;

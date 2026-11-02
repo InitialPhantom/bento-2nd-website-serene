@@ -23,21 +23,6 @@ python -m http.server 8000
 
 Fonts are Public Sans and Geist Mono from Google Fonts. There are no other dependencies.
 
-## Layout editor (owner only)
-
-You can rearrange and resize the grid yourself, straight on the site.
-
-1. Make a GitHub token: **Settings → Developer settings → Fine-grained tokens → Generate new token**. Under **Repository access**, pick only this repo. Under **Permissions → Contents**, choose **Read and write**.
-2. Open the site with `?edit` at the end of the address, for example `https://your-site/?edit`.
-3. Paste the token. The page asks GitHub whether that token can write to this repo, and only then turns editing on. Without `?edit` the editor code isn't set up at all, and even with it nothing can be dragged until the token checks out. The token is kept in that browser only (localStorage). "Forget token" removes it.
-4. Drag a tile to move it. A ghost shows where it will land, and the other tiles slide out of the way and pack up so there are never overlaps or gaps. Drag any edge or corner of a tile to resize it, from 1×1 up to 4 columns wide and 3 rows tall (Now playing, Wallpapers and Message me need at least 2 columns). When you let go, the grid tidies itself so every tile takes the first spot that fits.
-5. **Save** commits `layout.json` to this repo. The site reads that file on load, so visitors see the new arrangement once your host serves the new commit.
-
-Notes:
-- The editor works on desktop and tablet widths. Phones keep the built-in stacked order.
-- It needs the site served from a real address or a local server (`python -m http.server`). The Claude preview link can't reach GitHub and can't pass `?edit`.
-- Delete `layout.json` to go back to the default arrangement.
-
 ## Placeholders to fill in
 
 - **Message me**: sent with [FormSubmit](https://formsubmit.co), so no server is needed. Set `FORM_TO` near the bottom of `index.html` to your email, send one test message from the live site, and click the confirmation link FormSubmit emails you. FormSubmit then gives you a random address; put that in `FORM_TO` instead so your email isn't in the page. The tile asks for the visitor's message, then their reply email. Until `FORM_TO` is set, it tells visitors their message wasn't sent.
