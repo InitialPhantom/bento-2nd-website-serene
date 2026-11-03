@@ -279,13 +279,13 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .btn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 
 /* footer */
-.foot{max-width:1180px;margin:120px auto 0;padding-block:20px 72px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;color:var(--ink3);font-size:13px;font-weight:500}
+.foot{max-width:1180px;margin:120px auto 0;padding-block:20px 72px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;color:var(--ink3);font-size:13px;font-weight:500}
 .foot .ctl{display:flex;gap:16px;align-items:center}
 .foot .ctl button,.foot .ctl span{color:var(--ink3);transition:color .2s}
 .foot .ctl button:hover{color:var(--ink)}
 .foot .ctl b{font-weight:400;color:var(--ink2)}
-.foot #footClock{justify-self:end}
-@media (max-width:640px){.foot{grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:baseline}.foot #stay{grid-column:1 / -1}.foot .ctl{gap:14px}.foot #footClock{justify-self:end}}
+.foot .copy{justify-self:end}
+@media (max-width:640px){.foot{gap:8px 16px}}
 
 /* the sticky profile column can only ride as far as its grid row, so the gap above the footer lives inside the row:
    otherwise on shorter screens the column gets shoved up as you reach the bottom */
@@ -418,9 +418,8 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   <button class="lb-btn lb-next" id="lbNext" aria-label="Next piece"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
 </div>
 <footer class="foot" id="hello">
-  <span id="stay">Thanks for going slow.</span>
-  <span class="ctl mono"><span>pace <b id="paceTop">1.00×</b></span><button id="soundBtn" aria-pressed="true">sound on</button></span>
-  <span class="mono" id="footClock">00:00:00</span>
+  <span class="ctl mono"><button id="soundBtn" aria-pressed="true">sound on</button></span>
+  <span class="mono copy">© serene.ai</span>
 </footer>
 
 <script>
@@ -495,7 +494,7 @@ let PACE=1;const dial=$('#dial');
 function placeTicks(){const r=dial.getBoundingClientRect().width/2+11;$$('#ticks span').forEach((s,i)=>{s.style.transform=`rotate(${-135+270*i/16}deg) translateY(-${r}px)`})}
 new ResizeObserver(placeTicks).observe(dial);
 function setPace(k,quiet){k=clamp(k,0,1);PACE=+(.25*Math.pow(2,3*k)).toFixed(2);dial.style.setProperty('--a',(-135+270*k)+'deg');document.documentElement.style.setProperty('--pace',PACE);
-  $('#paceVal').textContent=PACE.toFixed(2)+'×';$('#paceTop').textContent=PACE.toFixed(2)+'×';$('#paceVal2').textContent=PACE.toFixed(2)+'×';dial.setAttribute('aria-valuenow',PACE);dial._k=k;if(!quiet)log(PACE<1?`you slowed things to ${PACE}×`:PACE>1?`you sped things to ${PACE}×`:'you set the pace back to 1×','pace')}
+  $('#paceVal').textContent=PACE.toFixed(2)+'×';$('#paceVal2').textContent=PACE.toFixed(2)+'×';dial.setAttribute('aria-valuenow',PACE);dial._k=k;if(!quiet)log(PACE<1?`you slowed things to ${PACE}×`:PACE>1?`you sped things to ${PACE}×`:'you set the pace back to 1×','pace')}
 let dragD=false;
 function dialMove(e){const r=dial.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let a=Math.atan2(e.clientX-cx,cy-e.clientY)*180/Math.PI;a=clamp(a,-135,135);const k=(a+135)/270;setPace(k)}
 dial.addEventListener('pointerdown',e=>{dragD=true;dial.setPointerCapture(e.pointerId);dialMove(e)});
@@ -859,9 +858,6 @@ $$('[data-split]').forEach(el=>{el.innerHTML=[...el.textContent].map((ch,i)=>`<s
 
 readC();
 
-/* ---------- footer ---------- */
-function foot(){const d=new Date();$('#footClock').textContent=`${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;const s=Math.floor((d-arrived)/1000);if(s>=20){const m=Math.floor(s/60);$('#stay').textContent=`You've been here ${m?m+'m ':''}${s%60}s. Thanks for going slow.`}}
-foot();setInterval(foot,1000);
 
 if(RM){for(const S of scenes)paint(S,0);setInterval(()=>{for(const S of scenes)if(S.vis)paint(S,0)},1000)}else{requestAnimationFrame(loop);if(LITE)setInterval(()=>{for(const S of scenes)if(S.vis&&S!==planet)paint(S,0)},1000)}
 </script>
