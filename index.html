@@ -279,11 +279,7 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .btn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 
 /* footer */
-.foot{max-width:1180px;margin:120px auto 0;padding-block:20px 72px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;color:var(--ink3);font-size:13px;font-weight:500}
-.foot .ctl{display:flex;gap:16px;align-items:center}
-.foot .ctl button,.foot .ctl span{color:var(--ink3);transition:color .2s}
-.foot .ctl button:hover{color:var(--ink)}
-.foot .ctl b{font-weight:400;color:var(--ink2)}
+.foot{max-width:1180px;margin:120px auto 0;padding-block:20px 72px;display:grid;grid-template-columns:1fr;align-items:center;gap:16px;color:var(--ink3);font-size:13px;font-weight:500}
 .foot .copy{justify-self:end}
 @media (max-width:640px){.foot{gap:8px 16px}}
 
@@ -320,7 +316,6 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   .cap{font-size:12.5px}
   .btn{height:34px;padding:0 14px;font-size:13px}
   .foot{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));font-size:12.5px}
-  .foot .ctl button{min-height:36px}
   body{padding-inline:16px}
   :root{--gap:10px;--r:16px}
   /* phones: the three films side by side as portrait cards, everything else in short full-width rows */
@@ -418,7 +413,6 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   <button class="lb-btn lb-next" id="lbNext" aria-label="Next piece"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
 </div>
 <footer class="foot" id="hello">
-  <span class="ctl mono"><button id="soundBtn" aria-pressed="true">sound on</button></span>
   <span class="mono copy">© serene.ai</span>
 </footer>
 
@@ -452,11 +446,11 @@ function gvgrad(o,y0,y1,a,b){const g=o.createLinearGradient(0,y0,0,y1);g.addColo
 function ell(o,x,y,rx,ry,f){o.beginPath();o.ellipse(x,y,Math.max(.1,rx),Math.max(.1,ry),0,0,TAU);o.fillStyle=f;o.fill()}
 
 /* ---------- sound ---------- */
-let AC=null,soundOn=store.get('lyn-sound','1')==='1';
+let AC=null;
 function ac(){if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC}
 const SCALE=[0,2,4,7,9,12,14,16];
 // a soft, low click: about 40% as loud as it was, a fifth lower, a short tail and only a hint of overtone
-function ping(step=0,vol=.1){if(!soundOn)return;let a;try{a=ac()}catch{return}const t=a.currentTime,f=262*Math.pow(2,SCALE[((step%8)+8)%8]/12);vol*=.4;
+function ping(step=0,vol=.1){let a;try{a=ac()}catch{return}const t=a.currentTime,f=262*Math.pow(2,SCALE[((step%8)+8)%8]/12);vol*=.4;
   for(const[m,v,d]of[[1,vol,.5],[2,vol*.06,.18]]){const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f*m;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05)}}
 /* film audio: fades in/out instead of switching on mid-waveform (that's the crackle), at 75% volume.
    A video joins the audio graph the first time it's made audible, which always follows a click. */
@@ -476,9 +470,6 @@ const unhush=v=>{if(v){clearTimeout(v._pt);v._pt=0}};
 // fade out just before a loop point, back in once it has wrapped
 function tails(list){for(const v of list){if(!v||!v._on||v.paused||!isFinite(v.duration))continue;const rem=v.duration-v.currentTime;
   if(!v._tail&&rem<FADE+.12){v._tail=true;ramp(v,0,Math.max(.04,rem-.03))}else if(v._tail&&v.currentTime<.5){v._tail=false;ramp(v,VOL)}}}
-const soundBtn=$('#soundBtn');
-function paintSound(){soundBtn.textContent=soundOn?'sound on':'sound off';soundBtn.setAttribute('aria-pressed',String(soundOn))}
-soundBtn.addEventListener('click',()=>{soundOn=!soundOn;store.set('lyn-sound',soundOn?'1':'0');paintSound();applyListen();ping(4)});paintSound();
 
 /* ---------- receipt ---------- */
 const slip=$('#slip');
@@ -603,7 +594,7 @@ const lbStep=()=>lbW+lbGap;
 function lbLayout(){const H=lbStage.clientHeight,W=lbStage.clientWidth,h=Math.max(120,Math.min(H,860,(W-(W<640?116:64))*16/9));lbW=h*9/16;lbGap=Math.round(clamp(W*.03,12,40));  // phones leave room to peek at the films either side
   lbStage.style.setProperty('--lh',h+'px');lbStage.style.setProperty('--lw',lbW+'px');lbStage.style.setProperty('--lg',lbGap+'px');lbRender()}
 function lbSet(k){lbI=k;const a=ART[k];$('#lbTitle').textContent=a.title+(a.audio?'  ·  '+credit(a):'');$('#lbNum').textContent=pad2(k+1)+' / '+pad2(ART.length);
-  lbItems.forEach((_,i)=>{const v=lbVid(i);if(!v)return;if(i===k&&!lb.hidden){unhush(v);audible(v,lbSound&&soundOn);v.play().catch(()=>{})}else hush(v)})}
+  lbItems.forEach((_,i)=>{const v=lbVid(i);if(!v)return;if(i===k&&!lb.hidden){unhush(v);audible(v,lbSound);v.play().catch(()=>{})}else hush(v)})}
 function lbRender(){const x=lbStage.clientWidth/2-lbW/2-lbPos*lbStep();lbTrack.style.transform='translate3d('+x.toFixed(2)+'px,0,0)';
   lbItems.forEach((it,i)=>{const d=Math.min(1,Math.abs(i-lbPos));it.style.transform='scale('+(1-.14*d).toFixed(4)+')';it.style.opacity=(1-.4*d).toFixed(3);it.style.filter=d>.02?'blur('+(d*8).toFixed(1)+'px)':'none'});
   // motion blur: horizontal only, scaled to speed
@@ -621,7 +612,7 @@ function closeLb(){lbItems.forEach((_,i)=>hush(lbVid(i)));lb.classList.remove('o
 $('#lbX').addEventListener('click',closeLb);
 $('#lbPrev').addEventListener('click',()=>lbTo(lbTgt-1));
 $('#lbNext').addEventListener('click',()=>lbTo(lbTgt+1));
-lbSnd.addEventListener('click',()=>{if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}lbSound=!lbSound;lbSnd.setAttribute('aria-pressed',String(lbSound));lbSnd.textContent=lbSound?'sound on':'sound off';audible(lbVid(lbI),lbSound&&soundOn)});
+lbSnd.addEventListener('click',()=>{lbSound=!lbSound;lbSnd.setAttribute('aria-pressed',String(lbSound));lbSnd.textContent=lbSound?'sound on':'sound off';audible(lbVid(lbI),lbSound)});
 // drag and flick; a tap on a side film brings it over, a tap on the empty backdrop closes
 lbStage.addEventListener('pointerdown',e=>{if(e.button!==0)return;lbDrag={x:e.clientX,pos:lbPos,lx:e.clientX,lt:performance.now(),moved:false,id:e.pointerId};lbVel=0;lbStage.setPointerCapture(e.pointerId)});
 lbStage.addEventListener('pointermove',e=>{const d=lbDrag;if(!d||e.pointerId!==d.id)return;const dx=e.clientX-d.x;if(!d.moved&&Math.abs(dx)>5){d.moved=true;lbStage.classList.add('drag')}if(!d.moved)return;
@@ -642,7 +633,7 @@ const totalDur=()=>ART.reduce((t,_,i)=>t+dur(i),0);
 const mmss=t=>pad2(Math.floor(t/60))+':'+pad2(Math.floor(t%60));
 function seek(m,t){if(!m)return;if(m.seeking){m._pend=t;return}m.currentTime=t}
 media.forEach(m=>m&&m.tagName==='VIDEO'&&m.addEventListener('seeked',()=>{if(m._pend!=null){const t=m._pend;m._pend=null;m.currentTime=t}}));
-function applyListen(){const on=listenOn&&soundOn;media.forEach((m,i)=>{if(m&&m.tagName==='VIDEO')audible(m,on&&i===reelI)});$('#npMini')?.setAttribute('aria-pressed',String(on));const b=$('#npSnd');if(b){b.setAttribute('aria-pressed',String(on));b.textContent=on?'sound on':'sound off'}}
+function applyListen(){const on=listenOn;media.forEach((m,i)=>{if(m&&m.tagName==='VIDEO')audible(m,on&&i===reelI)});$('#npMini')?.setAttribute('aria-pressed',String(on));const b=$('#npSnd');if(b){b.setAttribute('aria-pressed',String(on));b.textContent=on?'sound on':'sound off'}}
 function fit(cv){const r=cv.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=Math.max(2,Math.round(r.width)),h=Math.max(2,Math.round(r.height));
   if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}return[w,h,dpr]}
 // colour painted at 1 css px, ordered-dithered in place, then scaled up crisp
@@ -684,7 +675,7 @@ function scrubAt(x){let i=segs.length-1;for(let k=0;k<segs.length;k++){const d=s
     if(t<0&&reelI>0)setReel(reelI-1,true);else if(t>dur(reelI))setReel((reelI+1)%ART.length);else seek(m,Math.max(0,t))})}
 tap($('#npOpen'),()=>openLb(reelI,$('#npOpen')));
 const npRing=$('#npRing');$('#npMini').addEventListener('click',()=>npSnd.click());
-npSnd.addEventListener('click',()=>{if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}listenOn=!listenOn;applyListen();if(listenOn){const m=media[reelI];m&&m.play().catch(()=>{})}log(listenOn?'you turned the film sound on':'you muted the films','listen')});
+npSnd.addEventListener('click',()=>{listenOn=!listenOn;applyListen();if(listenOn){const m=media[reelI];m&&m.play().catch(()=>{})}log(listenOn?'you turned the film sound on':'you muted the films','listen')});
 
 // lights on/out: an eyeball in the middle of its tile that watches the cursor; clicking it switches the page between light and dark
 let GX=-1e4,GY=-1e4;addEventListener('pointermove',e=>{GX=e.clientX;GY=e.clientY},{passive:true});
