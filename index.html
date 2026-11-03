@@ -52,7 +52,9 @@ a{color:inherit}
 
 /* page */
 .page{max-width:1180px;margin-inline:auto;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:80px;padding-block:112px 0}
-.me{position:sticky;top:112px;align-self:start}
+/* sticks exactly where it already sits (body margin 8 + page padding 112), so it never shifts when sticking kicks in */
+.me{position:sticky;top:120px;align-self:start}
+html{overscroll-behavior-y:none}
 .planet{width:168px;height:168px;display:block;cursor:grab;touch-action:none;margin-left:-8px}
 .planet:active{cursor:grabbing}
 .me h1{margin:18px 0 0;font-weight:500;font-size:17px;color:var(--ink2);line-height:1.7}
@@ -285,6 +287,9 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .foot #footClock{justify-self:end}
 @media (max-width:640px){.foot{grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;align-items:baseline}.foot #stay{grid-column:1 / -1}.foot .ctl{gap:14px}.foot #footClock{justify-self:end}}
 
+/* the sticky profile column can only ride as far as its grid row, so the gap above the footer lives inside the row:
+   otherwise on shorter screens the column gets shoved up as you reach the bottom */
+@media (min-width:1041px){.gridwrap{padding-bottom:120px}.foot{margin-top:0}}
 @media (max-width:1040px){
   .page{grid-template-columns:minmax(0,1fr);gap:44px}
   .me{position:static;max-width:520px}
