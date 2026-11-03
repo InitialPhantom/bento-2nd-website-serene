@@ -336,6 +336,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   .dial{width:auto;height:62%}
   .paceval{display:none}
 }
+@media (pointer:coarse){.edge{backdrop-filter:none;-webkit-backdrop-filter:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 
@@ -494,8 +495,8 @@ function scene(host,canvas,draw,st={}){const c=canvas,ctx=c.getContext('2d');con
   host.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')S.over=false});host._s=S;io.observe(host);scenes.push(S);return S}
 let T=1.3,last=performance.now();
 function paint(S,dt){const c=S.ctx;c.setTransform(S.dpr,0,0,S.dpr,0,0);c.clearRect(0,0,S.w,S.h);c.save();S.draw(c,S.w,S.h,T,dt,S);c.restore()}
-const MINF=matchMedia('(pointer:coarse)').matches?1/31:0;
-function loop(now){if(MINF&&(now-last)/1000<MINF){requestAnimationFrame(loop);return}const raw=Math.min(.05,(now-last)/1000);last=now;const dt=raw*PACE;T+=dt;for(const S of scenes)if(S.vis)paint(S,dt);requestAnimationFrame(loop)}
+const LITE=matchMedia('(pointer:coarse)').matches,MINF=LITE?1/31:0;
+function loop(now){if(MINF&&(now-last)/1000<MINF){requestAnimationFrame(loop);return}const raw=Math.min(.05,(now-last)/1000);last=now;const dt=raw*PACE;T+=dt;for(const S of scenes)if(S.vis&&(!LITE||S===planet))paint(S,dt);requestAnimationFrame(loop)}
 const tap=(el,fn)=>{el.addEventListener('click',fn);el.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===el){e.preventDefault();fn(null)}})};
 const local=(S,e)=>{if(!e)return[S.w/2,S.h/2];const r=S.c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
 
@@ -573,7 +574,8 @@ const credit=a=>a.audio?'♪ '+a.audio:'';
 function artEl(a){if(a.src&&isVid(a)){const v=mkVideo(a.src,true);v.className='col';v.autoplay=true;return v}if(a.src){const im=new Image();im.src=a.src;im.alt=a.title;im.decoding='async';im.className='col';return im}const d=document.createElement('div');d.className='ph col';d.style.setProperty('--ph',phCss(a));return d}
 let reelI=0,reelDrag=false,reelLastT=0,listenOn=false;
 const lb=$('#lb'),lbStage=$('#lbStage'),lbTrack=$('#lbTrack'),lbSnd=$('#lbSnd');let lbI=-1,lbFrom=null,lbSound=false;
-function syncPlay(){const open=!lb.hidden;media.forEach(m=>{if(!m||m.tagName!=='VIDEO')return;if(open)m.pause();else if(m.paused&&!(reelDrag&&m===media[reelI]))m.play().catch(()=>{})})}
+const stillOK=i=>LITE&&i!==reelI&&films.some(F=>F.i===i&&F.drawn);
+function syncPlay(){const open=!lb.hidden;media.forEach((m,i)=>{if(!m||m.tagName!=='VIDEO')return;if(open||stillOK(i))m.pause();else if(m.paused&&!(reelDrag&&m===media[reelI]))m.play().catch(()=>{})})}
 // the viewer: every film in a row that glides on a spring; the ones beside the current film wait blurred
 const lbItems=ART.map(a=>{const it=document.createElement('div');it.className='lb-item';it.appendChild(a.src&&isVid(a)?mkVideo(a.src):artEl(a));lbTrack.appendChild(it);return it});
 const lbVid=i=>lbItems[i]?.querySelector('video');
@@ -652,10 +654,10 @@ function npTick(){const t=ART[reelI].title,n=RM?t.length:Math.min(t.length,Math.
   segs.forEach((d,i)=>d.style.flex=String(dur(i)));const sg=segs[reelI],m=media[reelI],k=m?clamp(m.currentTime/dur(reelI),0,1):0;npHead.style.left=(sg.offsetLeft+k*sg.offsetWidth)+'px';
   npRing.style.strokeDashoffset=(125.66*(1-k)).toFixed(1);
   let off=0;for(let i=0;i<reelI;i++)off+=dur(i);const at=off+(m?m.currentTime:0);$('#npTc').textContent=mmss(at)+' / '+mmss(totalDur());npTl.setAttribute('aria-valuenow',Math.round(at/totalDur()*100))}
-function setReel(i,keep){reelI=i;const m=media[i];if(m&&!keep)m.currentTime=0;reelLastT=keep&&m?m.currentTime:0;applyListen();npStart()}
+function setReel(i,keep){reelI=i;const m=media[i];if(m&&!keep)m.currentTime=0;reelLastT=keep&&m?m.currentTime:0;applyListen();npStart();if(LITE&&lb.hidden)syncPlay()}
 function reelTrack(){const m=media[reelI];if(!m||reelDrag)return;const t=m.currentTime;if(t+.25<reelLastT){setReel((reelI+1)%ART.length);return}reelLastT=t}
 function scrubAt(x){let i=segs.length-1;for(let k=0;k<segs.length;k++){const d=segs[k];if(x<d.offsetLeft+d.offsetWidth+3){i=k;break}}const d=segs[i],t=clamp((x-d.offsetLeft)/d.offsetWidth,0,1)*dur(i);
-  if(i!==reelI){const old=media[reelI];setReel(i,true);if(old&&lb.hidden)old.play().catch(()=>{})}const m=media[i];if(!m)return;m.pause();seek(m,Math.min(t,dur(i)-.05));reelLastT=t}
+  if(i!==reelI){const old=media[reelI];setReel(i,true);if(old&&lb.hidden&&!LITE)old.play().catch(()=>{})}const m=media[i];if(!m)return;m.pause();seek(m,Math.min(t,dur(i)-.05));reelLastT=t}
 {let on=false;const x=e=>e.clientX-npTl.getBoundingClientRect().left;
   const end=()=>{if(!on)return;on=false;reelDrag=false;const m=media[reelI];if(m){reelLastT=m.currentTime;if(lb.hidden)m.play().catch(()=>{})}log('you scrubbed through the films','scrub')};
   npTl.addEventListener('pointerdown',e=>{on=true;reelDrag=true;npTl.setPointerCapture(e.pointerId);scrubAt(x(e))});
@@ -681,7 +683,7 @@ const eye=scene($('#blink'),$('#blink canvas'),(c,w,h,t,dt,S)=>{const st=S.st,pk
   c.beginPath();c.arc(x,y,r,0,TAU);c.strokeStyle=C.ink;c.globalAlpha=.35;c.lineWidth=1;c.stroke();c.globalAlpha=1;
 },{gx:0,gy:0,dil:0,pop:-9});
 function setTheme(dark,quiet){const h=document.documentElement;if(!quiet){h.classList.add('theming');clearTimeout(setTheme._t);setTheme._t=setTimeout(()=>h.classList.remove('theming'),650)}
-  h.dataset.theme=dark?'dark':'light';readC();store.set('lyn-theme',dark?'dark':'light');$('#blinkCap').textContent=dark?'Lights out':'Lights on';$('#blink').setAttribute('aria-pressed',String(dark));
+  h.dataset.theme=dark?'dark':'light';readC();films.forEach(F=>F.drawn=false);store.set('lyn-theme',dark?'dark':'light');$('#blinkCap').textContent=dark?'Lights out':'Lights on';$('#blink').setAttribute('aria-pressed',String(dark));
   if(!quiet){ping(dark?0:4,.06);log(dark?'you turned the lights out':'you turned the lights back on','theme')}}
 setTheme(store.get('lyn-theme','light')==='dark',true);
 tap($('#blink'),()=>{eye.st.pop=T;setTheme(!isDark())});
@@ -690,7 +692,8 @@ tap($('#blink'),()=>{eye.st.pop=T;setTheme(!isDark())});
 applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.addEventListener('canplay',syncPlay,{once:true}));
 {let last=0;(function tick(now){requestAnimationFrame(tick);if(now-last<66||!document.getElementById('lb').hidden)return;last=now;
   for(const m of media)if(m&&m.tagName==='VIDEO'&&m.playbackRate!==PACE)m.playbackRate=PACE;
-  reelTrack();npTick();for(const F of films)if(F.vis)F.draw(F)})(0)}
+  reelTrack();npTick();for(const F of films){if(!F.vis)continue;const still=LITE&&F.i!==reelI;if(still&&(F.drawn||!ready(media[F.i])))continue;
+    F.draw(F);F.drawn=true;if(still&&media[F.i]?.tagName==='VIDEO')media[F.i].pause()}})(0)}
 
 /* ---------- message me (sent with Web3Forms, no server needed) ---------- */
 // Web3Forms access key: public by design, it only lets this form email the inbox it was made for.
@@ -840,6 +843,6 @@ readC();
 function foot(){const d=new Date();$('#footClock').textContent=`${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;const s=Math.floor((d-arrived)/1000);if(s>=20){const m=Math.floor(s/60);$('#stay').textContent=`You've been here ${m?m+'m ':''}${s%60}s. Thanks for going slow.`}}
 foot();setInterval(foot,1000);
 
-if(RM){for(const S of scenes)paint(S,0);setInterval(()=>{for(const S of scenes)if(S.vis)paint(S,0)},1000)}else requestAnimationFrame(loop);
+if(RM){for(const S of scenes)paint(S,0);setInterval(()=>{for(const S of scenes)if(S.vis)paint(S,0)},1000)}else{requestAnimationFrame(loop);if(LITE)setInterval(()=>{for(const S of scenes)if(S.vis&&S!==planet)paint(S,0)},1000)}
 </script>
 <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "074e55ec36684801819587cbfb077683"}'></script><!-- End Cloudflare Web Analytics -->
