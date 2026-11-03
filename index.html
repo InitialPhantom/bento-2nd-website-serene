@@ -458,6 +458,24 @@ function ac(){if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();i
 const SCALE=[0,2,4,7,9,12,14,16];
 function ping(step=0,vol=.1){if(!soundOn)return;let a;try{a=ac()}catch{return}const t=a.currentTime,f=392*Math.pow(2,SCALE[((step%8)+8)%8]/12);
   for(const[m,v,d]of[[1,vol,1.1],[3.01,vol*.15,.3]]){const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f*m;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.05)}}
+/* film audio: fades in/out instead of switching on mid-waveform (that's the crackle), at 75% volume.
+   A video joins the audio graph the first time it's made audible, which always follows a click. */
+const VOL=.75,FADE=.15;
+function gainOf(v){if(v._g!==undefined)return v._g;try{const a=ac(),src=a.createMediaElementSource(v),g=a.createGain();g.gain.value=0;src.connect(g).connect(a.destination);v._g=g}catch{v._g=null}return v._g}
+function ramp(v,to,dur=FADE){const g=to>0?gainOf(v):v._g;
+  if(g){const t=AC.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(to,t+dur);return}
+  // no Web Audio: fade the element's own volume instead
+  if(v._g===null){clearInterval(v._vi);const from=v.volume,t0=performance.now();v._vi=setInterval(()=>{const k=Math.min(1,(performance.now()-t0)/(dur*1000));v.volume=from+(to-from)*k;if(k>=1)clearInterval(v._vi)},16)}}
+// on: unmute and fade up; off: fade down, then mute
+function audible(v,on){if(!v)return;if(on===!!v._on&&on===!v.muted)return;v._on=on;v._tail=false;clearTimeout(v._mt);
+  if(on){gainOf(v);if(v._g===null)v.volume=0;v.muted=false;ramp(v,VOL)}
+  else if(!v.muted){ramp(v,0);v._mt=setTimeout(()=>{if(!v._on)v.muted=true},FADE*1000+40)}}
+// stop a video without a click: fade first if it's audible, pause once it's quiet
+function hush(v){if(!v)return;if(v.muted){if(!v._on)v.pause();return}audible(v,false);if(!v._pt)v._pt=setTimeout(()=>{v._pt=0;if(!v._on)v.pause()},FADE*1000+40)}
+const unhush=v=>{if(v){clearTimeout(v._pt);v._pt=0}};
+// fade out just before a loop point, back in once it has wrapped
+function tails(list){for(const v of list){if(!v||!v._on||v.paused||!isFinite(v.duration))continue;const rem=v.duration-v.currentTime;
+  if(!v._tail&&rem<FADE+.12){v._tail=true;ramp(v,0,Math.max(.04,rem-.03))}else if(v._tail&&v.currentTime<.5){v._tail=false;ramp(v,VOL)}}}
 const soundBtn=$('#soundBtn');
 function paintSound(){soundBtn.textContent=soundOn?'sound on':'sound off';soundBtn.setAttribute('aria-pressed',String(soundOn))}
 soundBtn.addEventListener('click',()=>{soundOn=!soundOn;store.set('lyn-sound',soundOn?'1':'0');paintSound();applyListen();ping(4)});paintSound();
@@ -478,11 +496,11 @@ new ResizeObserver(placeTicks).observe(dial);
 function setPace(k,quiet){k=clamp(k,0,1);PACE=+(.25*Math.pow(2,3*k)).toFixed(2);dial.style.setProperty('--a',(-135+270*k)+'deg');document.documentElement.style.setProperty('--pace',PACE);
   $('#paceVal').textContent=PACE.toFixed(2)+'×';$('#paceTop').textContent=PACE.toFixed(2)+'×';$('#paceVal2').textContent=PACE.toFixed(2)+'×';dial.setAttribute('aria-valuenow',PACE);dial._k=k;if(!quiet)log(PACE<1?`you slowed things to ${PACE}×`:PACE>1?`you sped things to ${PACE}×`:'you set the pace back to 1×','pace')}
 let dragD=false;
-function dialMove(e){const r=dial.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let a=Math.atan2(e.clientX-cx,cy-e.clientY)*180/Math.PI;a=clamp(a,-135,135);const k=(a+135)/270;const old=Math.round(dial._k*16);setPace(k);if(Math.round(k*16)!==old)ping(Math.round(k*7),.04)}
+function dialMove(e){const r=dial.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let a=Math.atan2(e.clientX-cx,cy-e.clientY)*180/Math.PI;a=clamp(a,-135,135);const k=(a+135)/270;setPace(k)}
 dial.addEventListener('pointerdown',e=>{dragD=true;dial.setPointerCapture(e.pointerId);dialMove(e)});
 dial.addEventListener('pointermove',e=>{if(dragD)dialMove(e)});
 dial.addEventListener('pointerup',()=>dragD=false);
-dial.addEventListener('keydown',e=>{const d={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];if(d){e.preventDefault();setPace(dial._k+d/24);ping(Math.round(dial._k*7),.04)}});
+dial.addEventListener('keydown',e=>{const d={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];if(d){e.preventDefault();setPace(dial._k+d/24)}});
 setPace(2/3,true);
 
 /* ---------- canvas engine ---------- */
@@ -575,7 +593,7 @@ function artEl(a){if(a.src&&isVid(a)){const v=mkVideo(a.src,true);v.className='c
 let reelI=0,reelDrag=false,reelLastT=0,listenOn=false;
 const lb=$('#lb'),lbStage=$('#lbStage'),lbTrack=$('#lbTrack'),lbSnd=$('#lbSnd');let lbI=-1,lbFrom=null,lbSound=false;
 const stillOK=i=>LITE&&i!==reelI&&films.some(F=>F.i===i&&F.drawn);
-function syncPlay(){const open=!lb.hidden;media.forEach((m,i)=>{if(!m||m.tagName!=='VIDEO')return;if(open||stillOK(i))m.pause();else if(m.paused&&!(reelDrag&&m===media[reelI]))m.play().catch(()=>{})})}
+function syncPlay(){const open=!lb.hidden;media.forEach((m,i)=>{if(!m||m.tagName!=='VIDEO')return;if(open||stillOK(i))hush(m);else{unhush(m);if(m.paused&&!(reelDrag&&m===media[reelI]))m.play().catch(()=>{})}})}
 // the viewer: every film in a row that glides on a spring; the ones beside the current film wait blurred
 const lbItems=ART.map(a=>{const it=document.createElement('div');it.className='lb-item';it.appendChild(a.src&&isVid(a)?mkVideo(a.src):artEl(a));lbTrack.appendChild(it);return it});
 const lbVid=i=>lbItems[i]?.querySelector('video');
@@ -585,7 +603,7 @@ const lbStep=()=>lbW+lbGap;
 function lbLayout(){const H=lbStage.clientHeight,W=lbStage.clientWidth,h=Math.max(120,Math.min(H,860,(W-(W<640?116:64))*16/9));lbW=h*9/16;lbGap=Math.round(clamp(W*.03,12,40));  // phones leave room to peek at the films either side
   lbStage.style.setProperty('--lh',h+'px');lbStage.style.setProperty('--lw',lbW+'px');lbStage.style.setProperty('--lg',lbGap+'px');lbRender()}
 function lbSet(k){lbI=k;const a=ART[k];$('#lbTitle').textContent=a.title+(a.audio?'  ·  '+credit(a):'');$('#lbNum').textContent=pad2(k+1)+' / '+pad2(ART.length);
-  lbItems.forEach((_,i)=>{const v=lbVid(i);if(!v)return;if(i===k&&!lb.hidden){v.muted=!(lbSound&&soundOn);v.play().catch(()=>{})}else{v.pause();v.muted=true}})}
+  lbItems.forEach((_,i)=>{const v=lbVid(i);if(!v)return;if(i===k&&!lb.hidden){unhush(v);audible(v,lbSound&&soundOn);v.play().catch(()=>{})}else hush(v)})}
 function lbRender(){const x=lbStage.clientWidth/2-lbW/2-lbPos*lbStep();lbTrack.style.transform='translate3d('+x.toFixed(2)+'px,0,0)';
   lbItems.forEach((it,i)=>{const d=Math.min(1,Math.abs(i-lbPos));it.style.transform='scale('+(1-.14*d).toFixed(4)+')';it.style.opacity=(1-.4*d).toFixed(3);it.style.filter=d>.02?'blur('+(d*8).toFixed(1)+'px)':'none'});
   // motion blur: horizontal only, scaled to speed
@@ -596,14 +614,14 @@ function lbTick(now){const dt=Math.min(.05,(now-lbLast)/1000||.016);lbLast=now;
   if(!lbDrag&&Math.abs(lbTgt-lbPos)<.0006&&Math.abs(lbVel)<.002){lbPos=lbTgt;lbVel=0;lbRender();lbRun=false;return}
   lbRender();requestAnimationFrame(lbTick)}
 function lbKick(){if(lbRun)return;lbRun=true;lbLast=performance.now();requestAnimationFrame(lbTick)}
-function lbTo(i){const t=clamp(Math.round(i),0,ART.length-1);if(t!==lbTgt)ping(2+t*2,.04);lbTgt=t;if(RM){lbPos=lbTgt;lbVel=0;lbRender()}else lbKick()}
+function lbTo(i){const t=clamp(Math.round(i),0,ART.length-1);lbTgt=t;if(RM){lbPos=lbTgt;lbVel=0;lbRender()}else lbKick()}
 function openLb(i,from){lbFrom=from;media.forEach(m=>m&&m.tagName==='VIDEO'&&m.pause());lb.hidden=false;document.documentElement.style.overflow='hidden';
   lbLayout();lbPos=lbTgt=i;lbVel=0;lbI=-1;lbRender();requestAnimationFrame(()=>requestAnimationFrame(()=>lb.classList.add('open')));$('#lbX').focus({preventScroll:true});ping(4,.05);log('you opened '+ART[i].title.toLowerCase(),'art'+i)}
-function closeLb(){lbItems.forEach((_,i)=>lbVid(i)?.pause());lb.classList.remove('open');document.documentElement.style.overflow='';setTimeout(()=>{lb.hidden=true;syncPlay();lbFrom?.focus({preventScroll:true})},RM?0:280)}
+function closeLb(){lbItems.forEach((_,i)=>hush(lbVid(i)));lb.classList.remove('open');document.documentElement.style.overflow='';setTimeout(()=>{lb.hidden=true;syncPlay();lbFrom?.focus({preventScroll:true})},RM?0:280)}
 $('#lbX').addEventListener('click',closeLb);
 $('#lbPrev').addEventListener('click',()=>lbTo(lbTgt-1));
 $('#lbNext').addEventListener('click',()=>lbTo(lbTgt+1));
-lbSnd.addEventListener('click',()=>{if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}lbSound=!lbSound;lbSnd.setAttribute('aria-pressed',String(lbSound));lbSnd.textContent=lbSound?'sound on':'sound off';const v=lbVid(lbI);if(v)v.muted=!lbSound});
+lbSnd.addEventListener('click',()=>{if(!soundOn){soundOn=true;store.set('lyn-sound','1');paintSound()}lbSound=!lbSound;lbSnd.setAttribute('aria-pressed',String(lbSound));lbSnd.textContent=lbSound?'sound on':'sound off';audible(lbVid(lbI),lbSound&&soundOn)});
 // drag and flick; a tap on a side film brings it over, a tap on the empty backdrop closes
 lbStage.addEventListener('pointerdown',e=>{if(e.button!==0)return;lbDrag={x:e.clientX,pos:lbPos,lx:e.clientX,lt:performance.now(),moved:false,id:e.pointerId};lbVel=0;lbStage.setPointerCapture(e.pointerId)});
 lbStage.addEventListener('pointermove',e=>{const d=lbDrag;if(!d||e.pointerId!==d.id)return;const dx=e.clientX-d.x;if(!d.moved&&Math.abs(dx)>5){d.moved=true;lbStage.classList.add('drag')}if(!d.moved)return;
@@ -624,7 +642,7 @@ const totalDur=()=>ART.reduce((t,_,i)=>t+dur(i),0);
 const mmss=t=>pad2(Math.floor(t/60))+':'+pad2(Math.floor(t%60));
 function seek(m,t){if(!m)return;if(m.seeking){m._pend=t;return}m.currentTime=t}
 media.forEach(m=>m&&m.tagName==='VIDEO'&&m.addEventListener('seeked',()=>{if(m._pend!=null){const t=m._pend;m._pend=null;m.currentTime=t}}));
-function applyListen(){const on=listenOn&&soundOn;media.forEach((m,i)=>{if(m&&m.tagName==='VIDEO')m.muted=!(on&&i===reelI)});$('#npMini')?.setAttribute('aria-pressed',String(on));const b=$('#npSnd');if(b){b.setAttribute('aria-pressed',String(on));b.textContent=on?'sound on':'sound off'}}
+function applyListen(){const on=listenOn&&soundOn;media.forEach((m,i)=>{if(m&&m.tagName==='VIDEO')audible(m,on&&i===reelI)});$('#npMini')?.setAttribute('aria-pressed',String(on));const b=$('#npSnd');if(b){b.setAttribute('aria-pressed',String(on));b.textContent=on?'sound on':'sound off'}}
 function fit(cv){const r=cv.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2),w=Math.max(2,Math.round(r.width)),h=Math.max(2,Math.round(r.height));
   if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}return[w,h,dpr]}
 // colour painted at 1 css px, ordered-dithered in place, then scaled up crisp
@@ -690,7 +708,7 @@ tap($('#blink'),()=>{eye.st.pop=T;setTheme(!isDark())});
 
 // one quiet loop for every film tile (~15 fps is plenty for the dither)
 applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.addEventListener('canplay',syncPlay,{once:true}));
-{let last=0;(function tick(now){requestAnimationFrame(tick);if(now-last<66||!document.getElementById('lb').hidden)return;last=now;
+{let last=0;(function tick(now){requestAnimationFrame(tick);if(now-last<66)return;last=now;tails(media);tails(lbItems.map((_,i)=>lbVid(i)));if(!lb.hidden)return;
   for(const m of media)if(m&&m.tagName==='VIDEO'&&m.playbackRate!==PACE)m.playbackRate=PACE;
   reelTrack();npTick();for(const F of films){if(!F.vis)continue;const still=LITE&&F.i!==reelI;if(still&&(F.drawn||!ready(media[F.i])))continue;
     F.draw(F);F.drawn=true;if(still&&media[F.i]?.tagName==='VIDEO')media[F.i].pause()}})(0)}
@@ -708,15 +726,15 @@ function typing(){const t=bubble('typing');t.innerHTML='<i></i><i></i><i></i>';r
 // two steps, like a chat: the message, then where to reply
 let draft=null,sending=false,lastSent=0;
 $('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)return;const text=msgIn.value.trim();if(!text)return;
-  bubble('out',text);msgIn.value='';ping(5,.06);
-  if(!draft){draft=text;log('you wrote a message','msg');const t=typing();setTimeout(()=>{t.remove();bubble('in','Where can I reach you? Leave your email and I’ll get back to you.');msgIn.placeholder='you@email.com';msgIn.type='email';msgIn.focus({preventScroll:true});ping(7,.05)},800);return}
+  bubble('out',text);msgIn.value='';
+  if(!draft){draft=text;log('you wrote a message','msg');const t=typing();setTimeout(()=>{t.remove();bubble('in','Where can I reach you? Leave your email and I’ll get back to you.');msgIn.placeholder='you@email.com';msgIn.type='email';msgIn.focus({preventScroll:true})},800);return}
   if($('#msgHp').value||Date.now()-lastSent<30000){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! Give it a moment before sending another.');return}
   const reply=text,body=draft;sending=true;const t=typing();
   let ok=false;
   if(FORM_KEY){try{const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
       body:JSON.stringify({access_key:FORM_KEY,subject:'New message from lynon.dev',from_name:'lynon.dev',email:reply,message:body,botcheck:''})});const j=await r.json().catch(()=>({}));ok=r.ok&&j.success===true}catch{}}
   t.remove();sending=false;
-  if(ok){lastSent=Date.now();draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! It’s on its way to me.');setTimeout(()=>emailBubble('If you’d rather, you can also email me at'),500);log('you sent a message','sent');ping(7,.05)}
+  if(ok){lastSent=Date.now();draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! It’s on its way to me.');setTimeout(()=>emailBubble('If you’d rather, you can also email me at'),500);log('you sent a message','sent')}
   else if(!FORM_KEY){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! My inbox isn’t connected here yet, so this message wasn’t sent.')}
   else emailBubble('That didn’t go through. Send your email again, or write to me at')});
 
@@ -803,7 +821,7 @@ function wpTick(now){const dt=Math.min(.05,(now-wpLast)/1000||.016);wpLast=now;
   if(!wpDrag&&Math.abs(wpTgt-wpPos)<.0006&&Math.abs(wpVel)<.002){wpPos=wpTgt;wpVel=0;wpRender();wpRun=false;return}
   wpRender();requestAnimationFrame(wpTick)}
 function wpKick(){if(wpRun)return;wpRun=true;wpLast=performance.now();requestAnimationFrame(wpTick)}
-function wpTo(i){const t=clamp(Math.round(i),0,WN-1);if(t!==wpTgt)ping(2+(t%5),.035);wpTgt=t;if(RM){wpPos=wpTgt;wpVel=0;wpRender()}else wpKick()}
+function wpTo(i){const t=clamp(Math.round(i),0,WN-1);wpTgt=t;if(RM){wpPos=wpTgt;wpVel=0;wpRender()}else wpKick()}
 wpPrev.addEventListener('click',()=>wpTo(wpTgt-1));wpNext.addEventListener('click',()=>wpTo(wpTgt+1));
 // drag and flick (mouse, pen or touch); a tap on a side wallpaper brings it to the middle
 wpTrack.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('.wp-dl'))return;wpDrag={x:e.clientX,pos:wpPos,lx:e.clientX,lt:performance.now(),moved:false,id:e.pointerId};wpVel=0;wpTrack.setPointerCapture(e.pointerId)});
@@ -823,7 +841,7 @@ function wpFly(img,from,to,r0,r1,done){const f=mk('img','wp-flip');f.src=img;f.a
 function wpOpen(i){if(wpMode!=='files'||wallPop.busy)return;wpMode='view';const from=fileImgs[i].getBoundingClientRect();
   wpWin.classList.add('viewing');wpLayout();wpPos=wpTgt=i;wpVel=0;wpRender();
   const big=wpItems[i].querySelector('img'),to=big.getBoundingClientRect();big.style.visibility='hidden';fileImgs[i].style.visibility='hidden';
-  wpFly(WALLS[i].src,from,to,10,16,()=>{big.style.visibility='';fileImgs[i].style.visibility=''});ping(5,.05);log('you opened a wallpaper','wallone')}
+  wpFly(WALLS[i].src,from,to,10,16,()=>{big.style.visibility='';fileImgs[i].style.visibility=''});log('you opened a wallpaper','wallone')}
 function wpClose(){if(wpMode!=='view')return;wpMode='files';const i=Math.round(clamp(wpPos,0,WN-1)),big=wpItems[i].querySelector('img'),from=big.getBoundingClientRect(),th=fileImgs[i];
   th.scrollIntoView({block:'nearest'});wpWin.classList.remove('viewing');wpRender();
   const pr=wpFiles.getBoundingClientRect(),tr=th.getBoundingClientRect(),s=.96,to={left:pr.left+(tr.left-pr.left-pr.width/2)/s+pr.width/2,top:pr.top+(tr.top-pr.top-pr.height/2)/s+pr.height/2,width:tr.width/s,height:tr.height/s};
