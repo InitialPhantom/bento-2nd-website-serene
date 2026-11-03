@@ -253,8 +253,8 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .msg-win.viewing .wp-view{opacity:1;pointer-events:auto}
 .wp-track{position:absolute;left:0;top:0;bottom:0;display:flex;gap:var(--wg,20px);padding:4px 0 22px;will-change:transform;touch-action:none;cursor:grab}
 .wp-track.drag{cursor:grabbing}
-.wp-item{flex:none;height:100%;margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;will-change:transform,opacity}
-.wp-item img{height:calc(100% - 42px);width:var(--iw,300px);object-fit:cover;border-radius:16px;display:block;background:var(--paper);pointer-events:none;-webkit-user-drag:none;box-shadow:0 30px 50px -30px rgba(0,0,0,.45)}
+.wp-item{flex:none;height:100%;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;will-change:transform,opacity}
+.wp-item img{height:var(--ih,calc(100% - 42px));width:var(--iw,300px);object-fit:cover;border-radius:16px;display:block;background:var(--paper);pointer-events:none;-webkit-user-drag:none;box-shadow:0 30px 50px -30px rgba(0,0,0,.45)}
 .wp-dl{height:32px;padding:0 14px;border-radius:999px;background:var(--paper);color:var(--ink);text-decoration:none;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:color .2s}
 .wp-dl:hover{color:var(--accent)}
 .wp-dl svg{width:13px;height:13px}
@@ -791,7 +791,8 @@ const blurN=document.getElementById('wpblurN');
 let wpPos=0,wpTgt=0,wpVel=0,wpIW=300,wpGap=20,wpRun=false,wpLast=0,wpDrag=null;
 const wpStep=()=>wpIW+wpGap;
 function wpLayout(){const h=wpView.clientHeight,ih=Math.max(80,h-4-22-42);wpIW=Math.max(60,Math.min(ih*9/16,wpView.clientWidth-120));wpGap=Math.round(clamp(wpView.clientWidth*.022,14,28));
-  wpView.style.setProperty('--iw',wpIW+'px');wpView.style.setProperty('--wg',wpGap+'px');wpRender()}
+  // keep the 9:16 shape: when the width is the limit (phones), the height shrinks to match instead of cropping into a tall strip
+  wpView.style.setProperty('--iw',wpIW+'px');wpView.style.setProperty('--ih',Math.min(ih,wpIW*16/9)+'px');wpView.style.setProperty('--wg',wpGap+'px');wpRender()}
 function wpRender(){const x=wpView.clientWidth/2-wpIW/2-wpPos*wpStep();wpTrack.style.transform='translate3d('+x.toFixed(2)+'px,0,0)';
   wpItems.forEach((it,i)=>{const d=Math.min(1,Math.abs(i-wpPos));it.style.transform='scale('+(1-.1*d).toFixed(4)+')';it.style.opacity=(1-.55*d).toFixed(3)});
   // motion blur: horizontal only, scaled to how fast the strip is moving
