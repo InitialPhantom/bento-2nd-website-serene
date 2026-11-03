@@ -279,9 +279,10 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .btn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 
 /* footer */
-.foot{max-width:1180px;margin:120px auto 0;padding-block:20px 72px;display:grid;grid-template-columns:1fr;align-items:center;gap:16px;color:var(--ink3);font-size:13px;font-weight:500}
+.foot{max-width:1180px;margin:120px auto 0;padding-block:20px 72px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px;color:var(--ink3);font-size:13px;font-weight:500}
 .foot .copy{justify-self:end}
-@media (max-width:640px){.foot{gap:8px 16px}}
+.foot #stay,.foot .copy{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:640px){.foot{gap:8px 12px;align-items:baseline}.foot #stay,.foot .copy{font-size:10px}}
 
 /* the sticky profile column can only ride as far as its grid row, so the gap above the footer lives inside the row:
    otherwise on shorter screens the column gets shoved up as you reach the bottom */
@@ -413,6 +414,7 @@ html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
   <button class="lb-btn lb-next" id="lbNext" aria-label="Next piece"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
 </div>
 <footer class="foot" id="hello">
+  <span id="stay">Thanks for going slow.</span>
   <span class="mono copy">© serene.ai</span>
 </footer>
 
@@ -848,6 +850,10 @@ tap(wallT,()=>{wallPop.show();log('you opened the wallpapers','walls')});
 $$('[data-split]').forEach(el=>{el.innerHTML=[...el.textContent].map((ch,i)=>`<span style="--i:${i}">${ch===' '?'&nbsp;':ch}</span>`).join('')});
 
 readC();
+
+/* ---------- footer: how long you've been here ---------- */
+function stay(){const s=Math.floor((Date.now()-arrived)/1000);if(s>=20){const m=Math.floor(s/60);$('#stay').textContent=`You've been here ${m?m+'m ':''}${s%60}s. Thanks for going slow.`}}
+stay();setInterval(stay,1000);
 
 
 if(RM){for(const S of scenes)paint(S,0);setInterval(()=>{for(const S of scenes)if(S.vis)paint(S,0)},1000)}else{requestAnimationFrame(loop);if(LITE)setInterval(()=>{for(const S of scenes)if(S.vis&&S!==planet)paint(S,0)},1000)}
