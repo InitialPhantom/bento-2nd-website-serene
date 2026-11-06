@@ -215,6 +215,10 @@ a.tile{display:block;text-decoration:none;color:inherit}
 .compose{position:absolute;left:14px;right:14px;bottom:14px;margin:0;transition:left .46s cubic-bezier(.2,.9,.25,1),right .46s cubic-bezier(.2,.9,.25,1),bottom .46s cubic-bezier(.2,.9,.25,1),box-shadow .2s;display:flex;align-items:center;gap:6px;padding:4px 4px 4px 16px;border-radius:999px;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 20px -14px rgba(0,0,0,.25)}
 .compose input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;color:var(--ink);-webkit-user-select:text;user-select:text}
 .compose input::placeholder{color:var(--ink3)}
+/* after a send: the form steps away and the thank-you plays in the chat */
+.compose.sealed{opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity .45s ease,transform .45s ease}
+.chat.sealed{bottom:16px}.msg-win.big .chat.sealed{bottom:24px}
+.thanks{flex:none;align-self:stretch;width:100%;height:84px;display:block}
 .send{width:36px;height:36px;flex:none;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;transition:transform .15s,opacity .2s}
 .send:active{transform:scale(.92)}
 .send svg{width:15px;height:15px}
@@ -712,10 +716,44 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
 const FORM_KEY='85a63b62-7106-4362-a431-2a9cdf7a9a78';
 const chat=$('#chat'),msgIn=$('#msgIn');
 function bubble(cls,text){const b=document.createElement('div');b.className='bubble '+cls;if(text)b.textContent=text;chat.appendChild(b);while(chat.children.length>40)chat.firstChild.remove();chat.scrollTop=chat.scrollHeight;return b}
+// the thank-you: the message drops into orbit around a small dithered planet while "thank you" prints in, halftone first
+let sealed=false;
+function sealThanks(){sealed=true;$('#compose').classList.add('sealed');msgIn.disabled=true;msgIn.blur();chat.classList.add('sealed');
+  const cv=document.createElement('canvas');cv.className='thanks';cv.setAttribute('role','img');cv.setAttribute('aria-label','Thanks for reaching out! I’ll get back to you soon.');
+  chat.appendChild(cv);chat.scrollTop=chat.scrollHeight;
+  const o=document.createElement('canvas'),ox=o.getContext('2d',{willReadFrequently:true}),c=cv.getContext('2d');
+  let W=0,H=0,dpr=1,img=null,mask=null,tx=0,tw=1,t0=performance.now(),last=0;
+  const font=getComputedStyle(document.documentElement).getPropertyValue('--f-body'),ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+  function size(){const r=cv.getBoundingClientRect();W=Math.max(160,Math.round(r.width));H=Math.max(40,Math.round(r.height));dpr=Math.min(devicePixelRatio||1,2);
+    cv.width=W*dpr;cv.height=H*dpr;o.width=W;o.height=H;img=ox.createImageData(W,H);
+    // the words as a 1px alpha mask, measured once per size
+    ox.clearRect(0,0,W,H);ox.font='600 27px '+font;ox.textBaseline='alphabetic';ox.fillStyle='#000';tx=78;tw=ox.measureText('thank you').width;ox.fillText('thank you',tx,H/2+3);
+    const d=ox.getImageData(0,0,W,H).data;mask=new Float32Array(W*H);for(let i=0;i<W*H;i++)mask[i]=d[i*4+3]/255;draw()}
+  const R=21,cx=36,a0=.35,spin=1.5;
+  const orbit=(a,cy)=>[cx+Math.cos(a)*R*1.75,cy+Math.sin(a)*R*.42-Math.cos(a)*R*.16,Math.sin(a)];
+  function dot(t,cy){const at=1.25,end=orbit(a0,cy);if(t>=at)return orbit(a0+(t-at)*spin,cy);
+    const k=ease(clamp((t-.2)/(at-.2),0,1)),sx=W-16,sy=8;return[sx+(end[0]-sx)*k,sy+(end[1]-sy)*k-Math.sin(Math.PI*k)*18,1]}
+  function draw(){if(!img)return;const t=RM?9:(performance.now()-t0)/1000,cy=H/2-4,ink=hex(C.dither),out=img.data;
+    const rs=ease(clamp(t/.8,0,1)),tp=(t-.9)/1.1,lx=-.62,ly=-.55,lz=.56;
+    for(let y=0,i=0;y<H;y++){const row=(y&7)*8;for(let x=0;x<W;x++,i++){const B=THR[row+(x&7)];let k=0;
+      const dx=(x+.5-cx)/R,dy=(y+.5-cy)/R,d2=dx*dx+dy*dy;
+      if(d2<1&&B<rs){const nz=Math.sqrt(1-d2),lam=Math.max(0,dx*lx+dy*ly+nz*lz);k=.1+.82*(1-lam)}
+      const m=mask[i];if(m>0&&B<clamp(tp*1.5-(x-tx)/tw,0,1))k=Math.max(k,m*.94);
+      const p=i*4;out[p]=ink[0];out[p+1]=ink[1];out[p+2]=ink[2];out[p+3]=k>B?235:0}}
+    ox.putImageData(img,0,0);c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,cv.width,cv.height);c.imageSmoothingEnabled=false;c.drawImage(o,0,0,cv.width,cv.height);
+    c.setTransform(dpr,0,0,dpr,0,0);
+    // the sent message, now a small blue moon: a short trail, hidden while it passes behind the planet
+    for(let g=3;g>=0;g--){const[x,y,front]=dot(t-g*.045,cy);if(front<0&&Math.hypot(x-cx,y-cy)<R+1)continue;
+      c.globalAlpha=g?.18*(1-g/4)*clamp((t-.2)*3,0,1):1;c.fillStyle=C.accent;c.beginPath();c.arc(x,y,g?2.4:3.4,0,TAU);c.fill()}
+    c.globalAlpha=clamp((t-1.7)/.5,0,1);c.fillStyle=C.ink3;c.font='12.5px '+font;c.fillText('I’ll get back to you soon.',tx+1,H/2+22);c.globalAlpha=1}
+  (function loop(now){if(!cv.isConnected)return;const t=(now-t0)/1000;if(LITE&&t>2.6){draw();return}
+    if(now-last>=33){last=now;draw()}if(!RM)requestAnimationFrame(loop)})(performance.now());
+  new ResizeObserver(size).observe(cv);
+  new MutationObserver(()=>draw()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']})}
 function typing(){const t=bubble('typing');t.innerHTML='<i></i><i></i><i></i>';return t}
 // two steps, like a chat: the message, then where to reply
 let draft=null,sending=false,lastSent=0;
-$('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)return;const text=msgIn.value.trim();if(!text)return;
+$('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending||sealed)return;const text=msgIn.value.trim();if(!text)return;
   bubble('out',text);msgIn.value='';
   if(!draft){draft=text;log('you wrote a message','msg');const t=typing();setTimeout(()=>{t.remove();bubble('in','Where can I reach you? Leave your email and I’ll get back to you.');msgIn.placeholder='you@email.com';msgIn.type='email';msgIn.focus({preventScroll:true})},800);return}
   if($('#msgHp').value||Date.now()-lastSent<30000){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! Give it a moment before sending another.');return}
@@ -724,7 +762,7 @@ $('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)
   if(FORM_KEY){try{const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
       body:JSON.stringify({access_key:FORM_KEY,subject:'New message from lynon.dev',from_name:'lynon.dev',email:reply,message:body,botcheck:''})});const j=await r.json().catch(()=>({}));ok=r.ok&&j.success===true}catch{}}
   t.remove();sending=false;
-  if(ok){lastSent=Date.now();draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks for reaching out! I’ll get back to you soon.');log('you sent a message','sent')}
+  if(ok){lastSent=Date.now();draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';sealThanks();log('you sent a message','sent')}
   else if(!FORM_KEY){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! My inbox isn’t connected here yet, so this message wasn’t sent.')}
   else bubble('in','That didn’t go through. Give it a moment and send your email again.')});
 
