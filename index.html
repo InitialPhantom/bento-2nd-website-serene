@@ -716,37 +716,42 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
 const FORM_KEY='85a63b62-7106-4362-a431-2a9cdf7a9a78';
 const chat=$('#chat'),msgIn=$('#msgIn');
 function bubble(cls,text){const b=document.createElement('div');b.className='bubble '+cls;if(text)b.textContent=text;chat.appendChild(b);while(chat.children.length>40)chat.firstChild.remove();chat.scrollTop=chat.scrollHeight;return b}
-// the thank-you: the message drops into orbit around a small dithered planet while "thank you" prints in, halftone first
+// the thank-you: their message comes apart into halftone grains that drift over and settle into "thank you", then a blue full stop lands
 let sealed=false;
 function sealThanks(){sealed=true;$('#compose').classList.add('sealed');msgIn.disabled=true;msgIn.blur();chat.classList.add('sealed');
   const cv=document.createElement('canvas');cv.className='thanks';cv.setAttribute('role','img');cv.setAttribute('aria-label','Thanks for reaching out! I’ll get back to you soon.');
   chat.appendChild(cv);chat.scrollTop=chat.scrollHeight;
   const o=document.createElement('canvas'),ox=o.getContext('2d',{willReadFrequently:true}),c=cv.getContext('2d');
-  let W=0,H=0,dpr=1,img=null,mask=null,tx=0,tw=1,t0=performance.now(),last=0;
+  let W=0,H=0,dpr=1,img=null,mask=null,P=null,pill=null,tx=2,tw=1,base=0,t0=performance.now(),last=0;
   const font=getComputedStyle(document.documentElement).getPropertyValue('--f-body'),ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
   function size(){const r=cv.getBoundingClientRect();W=Math.max(160,Math.round(r.width));H=Math.max(40,Math.round(r.height));dpr=Math.min(devicePixelRatio||1,2);
-    cv.width=W*dpr;cv.height=H*dpr;o.width=W;o.height=H;img=ox.createImageData(W,H);
-    // the words as a 1px alpha mask, measured once per size
-    ox.clearRect(0,0,W,H);ox.font='600 27px '+font;ox.textBaseline='alphabetic';ox.fillStyle='#000';tx=78;tw=ox.measureText('thank you').width;ox.fillText('thank you',tx,H/2+3);
-    const d=ox.getImageData(0,0,W,H).data;mask=new Float32Array(W*H);for(let i=0;i<W*H;i++)mask[i]=d[i*4+3]/255;draw()}
-  const R=21,cx=36,a0=.35,spin=1.5;
-  const orbit=(a,cy)=>[cx+Math.cos(a)*R*1.75,cy+Math.sin(a)*R*.42-Math.cos(a)*R*.16,Math.sin(a)];
-  function dot(t,cy){const at=1.25,end=orbit(a0,cy);if(t>=at)return orbit(a0+(t-at)*spin,cy);
-    const k=ease(clamp((t-.2)/(at-.2),0,1)),sx=W-16,sy=8;return[sx+(end[0]-sx)*k,sy+(end[1]-sy)*k-Math.sin(Math.PI*k)*18,1]}
-  function draw(){if(!img)return;const t=RM?9:(performance.now()-t0)/1000,cy=H/2-4,ink=hex(C.dither),out=img.data;
-    const rs=ease(clamp(t/.8,0,1)),tp=(t-.9)/1.1,lx=-.62,ly=-.55,lz=.56;
+    cv.width=W*dpr;cv.height=H*dpr;o.width=W;o.height=H;img=ox.createImageData(W,H);base=Math.round(H/2+2);
+    // the words as a 1px alpha mask
+    ox.clearRect(0,0,W,H);ox.font='600 27px '+font;ox.textBaseline='alphabetic';ox.fillStyle='#000';tw=ox.measureText('thank you').width;ox.fillText('thank you',tx,base);
+    const d=ox.getImageData(0,0,W,H).data;mask=new Float32Array(W*H);const on=[];for(let i=0;i<W*H;i++){mask[i]=d[i*4+3]/255;if(mask[i]>.55)on.push(i)}
+    // the sent message, as a pill at the top right, and one grain per sampled letter pixel
+    const pw=Math.min(150,W*.42);pill={x:W-pw-2,y:3,w:pw,h:22};
+    const n=Math.min(on.length,700);P=[];for(let k=0;k<n;k++){const i=on[Math.floor(rnd(k*7.31+1)*on.length)];
+      P.push({sx:pill.x+rnd(k+.17)*pill.w,sy:pill.y+rnd(k+.53)*pill.h,ex:i%W,ey:Math.floor(i/W),dl:rnd(k+.91)*.55,bow:(rnd(k+.33)-.5)*46})}
+    draw()}
+  function draw(){if(!img)return;const t=RM?9:(performance.now()-t0)/1000,ink=hex(C.dither),out=img.data;
+    const gone=clamp((t-.05)/.75,0,1),fill=clamp((t-.95)/.6,0,1);
     for(let y=0,i=0;y<H;y++){const row=(y&7)*8;for(let x=0;x<W;x++,i++){const B=THR[row+(x&7)];let k=0;
-      const dx=(x+.5-cx)/R,dy=(y+.5-cy)/R,d2=dx*dx+dy*dy;
-      if(d2<1&&B<rs){const nz=Math.sqrt(1-d2),lam=Math.max(0,dx*lx+dy*ly+nz*lz);k=.1+.82*(1-lam)}
-      const m=mask[i];if(m>0&&B<clamp(tp*1.5-(x-tx)/tw,0,1))k=Math.max(k,m*.94);
+      // the pill thins out as its grains leave
+      if(x>=pill.x&&x<pill.x+pill.w&&y>=pill.y&&y<pill.y+pill.h){const rx=Math.min(x-pill.x,pill.x+pill.w-1-x),ry=Math.min(y-pill.y,pill.y+pill.h-1-y),rr=pill.h/2;
+        const inside=rx>=rr||ry>=rr||Math.hypot(rr-rx,rr-ry)<=rr;if(inside&&B>=gone)k=.9}
+      // letters fill in once the grains have landed
+      const m=mask[i];if(m>0&&B<fill)k=Math.max(k,m*.94);
       const p=i*4;out[p]=ink[0];out[p+1]=ink[1];out[p+2]=ink[2];out[p+3]=k>B?235:0}}
+    // grains in flight, on a gentle bow
+    for(const g of P){const k=clamp((t-.1-g.dl)/.85,0,1);if(k<=0||k>=1)continue;const e=ease(k),x=Math.round(g.sx+(g.ex-g.sx)*e),y=Math.round(g.sy+(g.ey-g.sy)*e+Math.sin(Math.PI*k)*g.bow);
+      if(x>=0&&x<W&&y>=0&&y<H){const p=(y*W+x)*4;out[p]=ink[0];out[p+1]=ink[1];out[p+2]=ink[2];out[p+3]=235}}
     ox.putImageData(img,0,0);c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,cv.width,cv.height);c.imageSmoothingEnabled=false;c.drawImage(o,0,0,cv.width,cv.height);
     c.setTransform(dpr,0,0,dpr,0,0);
-    // the sent message, now a small blue moon: a short trail, hidden while it passes behind the planet
-    for(let g=3;g>=0;g--){const[x,y,front]=dot(t-g*.045,cy);if(front<0&&Math.hypot(x-cx,y-cy)<R+1)continue;
-      c.globalAlpha=g?.18*(1-g/4)*clamp((t-.2)*3,0,1):1;c.fillStyle=C.accent;c.beginPath();c.arc(x,y,g?2.4:3.4,0,TAU);c.fill()}
-    c.globalAlpha=clamp((t-1.7)/.5,0,1);c.fillStyle=C.ink3;c.font='12.5px '+font;c.fillText('I’ll get back to you soon.',tx+1,H/2+22);c.globalAlpha=1}
-  (function loop(now){if(!cv.isConnected)return;const t=(now-t0)/1000;if(LITE&&t>2.6){draw();return}
+    // a blue full stop drops in with a little overshoot
+    const sk=clamp((t-1.45)/.35,0,1);if(sk>0){const r=3.4*(1+Math.sin(sk*Math.PI)*.45*(1-sk)),y=base-3.4-(1-ease(sk))*14;c.globalAlpha=clamp(sk*3,0,1);c.fillStyle=C.accent;c.beginPath();c.arc(tx+tw+5,y,r,0,TAU);c.fill()}
+    c.globalAlpha=clamp((t-1.75)/.5,0,1);c.fillStyle=C.ink3;c.font='12.5px '+font;c.fillText('I’ll get back to you soon.',tx+1,base+20);c.globalAlpha=1}
+  (function loop(now){if(!cv.isConnected)return;if((now-t0)/1000>2.6){draw();return}
     if(now-last>=33){last=now;draw()}if(!RM)requestAnimationFrame(loop)})(performance.now());
   new ResizeObserver(size).observe(cv);
   new MutationObserver(()=>draw()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']})}
