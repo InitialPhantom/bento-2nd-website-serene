@@ -710,10 +710,7 @@ applyListen();npStart();syncPlay();media.forEach(m=>m&&m.tagName==='VIDEO'&&m.ad
 // Web3Forms access key: public by design, it only lets this form email the inbox it was made for.
 // Leave empty to turn sending off.
 const FORM_KEY='85a63b62-7106-4362-a431-2a9cdf7a9a78';
-// shown to visitors who'd rather write from their own email
-const MY_EMAIL='lynondev@proton.me';
 const chat=$('#chat'),msgIn=$('#msgIn');
-function emailBubble(lead){const b=bubble('in',lead+' ');const a=document.createElement('a');a.href='mailto:'+MY_EMAIL;a.textContent=MY_EMAIL;b.append(a,'.');return b}
 function bubble(cls,text){const b=document.createElement('div');b.className='bubble '+cls;if(text)b.textContent=text;chat.appendChild(b);while(chat.children.length>40)chat.firstChild.remove();chat.scrollTop=chat.scrollHeight;return b}
 function typing(){const t=bubble('typing');t.innerHTML='<i></i><i></i><i></i>';return t}
 // two steps, like a chat: the message, then where to reply
@@ -727,9 +724,9 @@ $('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)
   if(FORM_KEY){try{const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
       body:JSON.stringify({access_key:FORM_KEY,subject:'New message from lynon.dev',from_name:'lynon.dev',email:reply,message:body,botcheck:''})});const j=await r.json().catch(()=>({}));ok=r.ok&&j.success===true}catch{}}
   t.remove();sending=false;
-  if(ok){lastSent=Date.now();draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! It’s on its way to me.');setTimeout(()=>emailBubble('If you’d rather, you can also email me at'),500);log('you sent a message','sent')}
+  if(ok){lastSent=Date.now();draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! It’s on its way to me. I read every message and I’ll get back to you at that email soon.');log('you sent a message','sent')}
   else if(!FORM_KEY){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! My inbox isn’t connected here yet, so this message wasn’t sent.')}
-  else emailBubble('That didn’t go through. Send your email again, or write to me at')});
+  else bubble('in','That didn’t go through. Give it a moment and send your email again.')});
 
 // pop-out windows: a tile grows into a window in the middle of the page and shrinks back into place on close
 const boxOf=el=>{const r=el.getBoundingClientRect();return{left:r.left,top:r.top,width:r.width,height:r.height}};
