@@ -724,7 +724,7 @@ $('#compose').addEventListener('submit',async e=>{e.preventDefault();if(sending)
   if(FORM_KEY){try{const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},
       body:JSON.stringify({access_key:FORM_KEY,subject:'New message from lynon.dev',from_name:'lynon.dev',email:reply,message:body,botcheck:''})});const j=await r.json().catch(()=>({}));ok=r.ok&&j.success===true}catch{}}
   t.remove();sending=false;
-  if(ok){lastSent=Date.now();draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! It’s on its way to me. I read every message and I’ll get back to you at that email soon.');log('you sent a message','sent')}
+  if(ok){lastSent=Date.now();draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks for reaching out! I’ll get back to you soon.');log('you sent a message','sent')}
   else if(!FORM_KEY){draft=null;msgIn.placeholder='Write a message…';msgIn.type='text';bubble('in','Thanks! My inbox isn’t connected here yet, so this message wasn’t sent.')}
   else bubble('in','That didn’t go through. Give it a moment and send your email again.')});
 
